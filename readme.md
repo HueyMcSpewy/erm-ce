@@ -24,9 +24,8 @@ The CC BY-NC-SA license requires the following elements:
 - NC: The material can only be used for non-commercial purposes
 - SA: Adaptations must be licensed under the same terms
 
+[![CodeFactor](https://www.codefactor.io/repository/github/hueymcspewy/erm-ce/badge)](https://www.codefactor.io/repository/github/hueymcspewy/erm-ce)
 
-[![Better Stack Badge](https://uptime.betterstack.com/status-badges/v1/monitor/insx.svg)](https://uptime.betterstack.com/?utm_source=status_badge)
-[![CodeFactor](https://www.codefactor.io/repository/github/mikeyusersrec/erm/badge)](https://www.codefactor.io/repository/github/mikeyusersrec/erm)
 
 
 
