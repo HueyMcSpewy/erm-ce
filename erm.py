@@ -292,6 +292,7 @@ class Bot(commands.AutoShardedBot):
 
             # we do this so the bot can get a cache of things before we spam discord with fetches
             asyncio.create_task(self.start_tasks())
+            await bot.add_cog(ServerCountStatus(bot))
             
             async for document in self.views.db.find({}):
                 if document["view_type"] == "LOAMenu":
@@ -738,5 +739,6 @@ def run():
 
 if __name__ == "__main__":
     run()
+
 
 
