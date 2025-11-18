@@ -40,7 +40,7 @@ import pytz
 import sentry_sdk
 from decouple import config
 from discord import app_commands
-from discord.ext import tasks
+from discord.ext import tasks, commands
 from roblox import client as roblox
 from sentry_sdk import push_scope, capture_exception
 from sentry_sdk.integrations.pymongo import PyMongoIntegration
@@ -138,15 +138,9 @@ class Bot(commands.AutoShardedBot):
         await super().close()
 
     async def is_owner(self, user: discord.User):
-        # Only developers of the bot on the team should have
-        # full access to Jishaku commands. Hard-coded
-        # IDs are a security vulnerability.
-
-        # Else fall back to the original
         if user.id == 881062877526654987:
             return True
-
-        if environment != "CUSTOM": # let's not allow custom bot owners to use jishaku lol
+        if environment != "CUSTOM":
             return await super().is_owner(user)
         else:
             return False
@@ -156,7 +150,6 @@ class Bot(commands.AutoShardedBot):
         self.view_state_manager: ViewStateManager = ViewStateManager()
 
         if not self.setup_status:
-            # await bot.load_extension('utils.routes')
             logging.info(
                 "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━���━━━━━━\n\n{} is online!".format(
                     self.user.name
@@ -174,8 +167,6 @@ class Bot(commands.AutoShardedBot):
             else:
                 raise Exception("Invalid environment")
             
-
-
             self.panel_db = self.mongo["UserIdentity"]
             self.priority_settings = Document(self.panel_db, "PrioritySettings")
             self.staff_requests = Document(self.panel_db, "StaffRequests")
@@ -185,9 +176,7 @@ class Bot(commands.AutoShardedBot):
             self.log_tracker = LogTracker(self)
             self.scheduled_pm_queue = asyncio.Queue()
             self.pm_counter = {}
-            self.team_restrictions_infractions = (
-                {}
-            )  # Guild ID => [ { Username: Count } ]
+            self.team_restrictions_infractions = {}
 
             self.shift_management = ShiftManagement(self.db, "shift_management")
             self.errors = Errors(self.db, "errors")
@@ -247,7 +236,6 @@ class Bot(commands.AutoShardedBot):
             EXTERNAL_EXT = ["utils.api"]
             [Extensions.append(i) for i in EXTERNAL_EXT]
 
-            # used for checking whether this is WL!
             self.environment = environment
             self.emoji_controller = EmojiController(self)
 
@@ -274,23 +262,19 @@ class Bot(commands.AutoShardedBot):
             bot.error_list = []
             logging.info("Connected to MongoDB!")
 
-            # await bot.load_extension("jishaku")
             await bot.load_extension("utils.hot_reload")
-            # await bot.load_extension('utils.server')
 
-            if not bot.is_synced:  # check if slash commands have been synced
-                bot.tree.copy_global_to(guild=discord.Object(id=1403328821121388674))
-            if environment == "DEVELOPMENT":
-                pass
-                # await bot.tree.sync(guild=discord.Object(id=1403328821121388674))
-            elif environment == "PRODUCTION":
-                await self.tree.sync()
-                # Prevent auto syncing
-                # await bot.tree.sync()
-                # guild specific: leave blank if global (global registration can take 1-24 hours)
-            bot.is_synced = True
+            # --- GLOBAL SYNC PROMPT ---
+            if not bot.is_synced:
+                if getattr(bot, "global_sync", False):
+                    logging.info("Global syncing slash commands...")
+                    await self.tree.sync()
+                else:
+                    logging.info("Skipping global sync; using guild sync...")
+                    bot.tree.copy_global_to(guild=discord.Object(id=1403328821121388674))
+                bot.is_synced = True
+            # -------------------------
 
-            # we do this so the bot can get a cache of things before we spam discord with fetches
             asyncio.create_task(self.start_tasks())
             await bot.add_cog(ServerCountStatus(bot))
             
@@ -376,348 +360,7 @@ bot.bloxlink_api_key = bloxlink_api_key
 environment = config("ENVIRONMENT", default="DEVELOPMENT")
 internal_command_storage = {}
 
-
-def running():
-    if bot:
-        if bot._ready != MISSING:
-            return 1
-        else:
-            return -1
-    else:
-        return -1
-
-
-@bot.before_invoke
-async def AutoDefer(ctx: commands.Context):
-    if (
-        environment == "CUSTOM"
-        and config("CUSTOM_GUILD_ID", default=None) != 0
-        and not getattr(ctx.bot, "whitelist_disabled", False)
-    ):
-        if ctx.guild.id != int(config("CUSTOM_GUILD_ID")):
-            if ctx.interaction:
-                await ctx.interaction.response.send_message(
-                    embed=discord.Embed(
-                        title="Not Permitted",
-                        description="This bot is not permitted to be used in this server. You can change this in the **Whitelabel Bot Dashboard**.",
-                        color=BLANK_COLOR,
-                    ),
-                    ephemeral=True,
-                )
-                raise Exception(f"Guild not permitted to use this bot: {ctx.guild.id}")
-
-    guild_id = ctx.guild.id
-    if (environment != "CUSTOM" or int(config("CUSTOM_GUILD_ID", default="0")) != guild_id) and await has_whitelabel(bot, guild_id):
-        if "jishaku" in ctx.command.qualified_name:
-            return
-        if ctx.interaction:
-            await ctx.interaction.response.send_message(
-                embed=discord.Embed(
-                    title="Not Permitted",
-                    description="There is a whitelabel bot already in this server.",
-                    color=BLANK_COLOR,
-                ),
-                ephemeral=True,
-            )
-        raise Exception("Whitelabel bot already in use")
-
-    internal_command_storage[ctx] = datetime.datetime.now(tz=pytz.UTC).timestamp()
-    if ctx.command:
-        if ctx.command.extras.get("ephemeral") is True:
-            if ctx.interaction:
-                return await ctx.defer(ephemeral=True)
-        if ctx.command.extras.get("ignoreDefer") is True:
-            return
-        await ctx.defer()
-
-
-@bot.after_invoke
-async def loggingCommandExecution(ctx: commands.Context):
-    if ctx in internal_command_storage:
-        command_name = ctx.command.qualified_name
-
-        duration = float(
-            datetime.datetime.now(tz=pytz.UTC).timestamp()
-            - internal_command_storage[ctx]
-        )
-        logging.info(
-            f"Command {command_name} was run by {ctx.author.name} ({ctx.author.id}) and lasted {duration} seconds"
-        )
-        shard_info = (
-            f"Shard ID ::: {ctx.guild.shard_id}"
-            if ctx.guild
-            else "Shard ID ::: -1, Direct Messages"
-        )
-        logging.info(shard_info)
-    else:
-        logging.info(
-            "Command could not be found in internal context storage. Please report."
-        )
-    del internal_command_storage[ctx]
-
-
-@bot.event
-async def on_message(
-    message,
-):  # DO NOT COG
-
-    if not message.guild:
-        return await bot.process_commands(message)
-
-    if (
-        environment == "CUSTOM"
-        and config("CUSTOM_GUILD_ID", default=None) != 0
-        and not getattr(bot, "whitelist_disabled", False)
-    ):
-        if message.guild.id != int(config("CUSTOM_GUILD_ID")):
-            ctx = await bot.get_context(message)
-            if ctx.command is not None:
-                await message.reply(
-                    embed=discord.Embed(
-                        title="Not Permitted",
-                        description="This bot is not permitted to be used in this server. You can change this in the **Whitelabel Bot Dashboard**.",
-                        color=BLANK_COLOR,
-                    )
-                )
-                return
-
-    if environment == "PRODUCTION" and await bot.whitelabel.db.find_one({"GuildID": str(message.guild.id)}) is not None:
-        return
-
-    await bot.process_commands(message)
-
-
-client = roblox.Client()
-
-
-async def staff_check(bot_obj, guild, member):
-    guild_settings = await bot_obj.settings.find_by_id(guild.id)
-    if guild_settings:
-        if "role" in guild_settings["staff_management"].keys():
-            if guild_settings["staff_management"]["role"] != "":
-                if isinstance(guild_settings["staff_management"]["role"], list):
-                    for role in guild_settings["staff_management"]["role"]:
-                        if role in [role.id for role in member.roles]:
-                            return True
-                elif isinstance(guild_settings["staff_management"]["role"], int):
-                    if guild_settings["staff_management"]["role"] in [
-                        role.id for role in member.roles
-                    ]:
-                        return True
-                    
-    if await admin_check(bot_obj, guild, member):
-        return True
-    
-    if member.guild_permissions.manage_messages:
-        return True
-    return False
-
-
-async def management_check(bot_obj, guild, member):
-    guild_settings = await bot_obj.settings.find_by_id(guild.id)
-    if guild_settings:
-        if "management_role" in guild_settings["staff_management"].keys():
-            if guild_settings["staff_management"]["management_role"] != "":
-                if isinstance(
-                    guild_settings["staff_management"]["management_role"], list
-                ):
-                    for role in guild_settings["staff_management"]["management_role"]:
-                        if role in [role.id for role in member.roles]:
-                            return True
-                elif isinstance(
-                    guild_settings["staff_management"]["management_role"], int
-                ):
-                    if guild_settings["staff_management"]["management_role"] in [
-                        role.id for role in member.roles
-                    ]:
-                        return True
-    if member.guild_permissions.manage_guild:
-        return True
-    return False
-
-
-async def admin_check(bot_obj, guild, member):
-    guild_settings = await bot_obj.settings.find_by_id(guild.id)
-    if guild_settings:
-        if "admin_role" in guild_settings["staff_management"].keys():
-            if guild_settings["staff_management"]["admin_role"] != "":
-                if isinstance(guild_settings["staff_management"]["admin_role"], list):
-                    for role in guild_settings["staff_management"]["admin_role"]:
-                        if role in [role.id for role in member.roles]:
-                            return True
-                elif isinstance(guild_settings["staff_management"]["admin_role"], int):
-                    if guild_settings["staff_management"]["admin_role"] in [
-                        role.id for role in member.roles
-                    ]:
-                        return True
-        if "management_role" in guild_settings["staff_management"].keys():
-            if guild_settings["staff_management"]["management_role"] != "":
-                if isinstance(
-                    guild_settings["staff_management"]["management_role"], list
-                ):
-                    for role in guild_settings["staff_management"]["management_role"]:
-                        if role in [role.id for role in member.roles]:
-                            return True
-                elif isinstance(
-                    guild_settings["staff_management"]["management_role"], int
-                ):
-                    if guild_settings["staff_management"]["management_role"] in [
-                        role.id for role in member.roles
-                    ]:
-                        return True
-    if member.guild_permissions.administrator:
-        return True
-    return False
-
-
-async def staff_predicate(ctx):
-    if ctx.guild is None:
-        return True
-    else:
-        return await staff_check(ctx.bot, ctx.guild, ctx.author)
-
-
-def is_staff():
-    return commands.check(staff_predicate)
-
-
-async def admin_predicate(ctx):
-    if ctx.guild is None:
-        return True
-    else:
-        return await admin_check(ctx.bot, ctx.guild, ctx.author)
-
-
-def is_admin():
-    return commands.check(admin_predicate)
-
-
-async def management_predicate(ctx):
-    if ctx.guild is None:
-        return True
-    else:
-        return await management_check(ctx.bot, ctx.guild, ctx.author)
-
-
-def is_management():
-    return commands.check(management_predicate)
-
-
-async def check_privacy(bot: Bot, guild: int, setting: str):
-    privacySettings = await bot.privacy.find_by_id(guild)
-    if not privacySettings:
-        return True
-    if not setting in privacySettings.keys():
-        return True
-    return privacySettings[setting]
-
-
-async def warning_json_to_mongo(jsonName: str, guildId: int):
-    with open(f"{jsonName}", "r") as f:
-        logging.info(f)
-        f = json.load(f)
-
-    logging.info(f)
-
-    for key, value in f.items():
-        structure = {"_id": key.lower(), "warnings": []}
-        logging.info([key, value])
-        logging.info(key.lower())
-
-        if await bot.warnings.find_by_id(key.lower()):
-            data = await bot.warnings.find_by_id(key.lower())
-            for item in data["warnings"]:
-                structure["warnings"].append(item)
-
-        for item in value:
-            item.pop("ID", None)
-            item["id"] = next(generator)
-            item["Guild"] = guildId
-            structure["warnings"].append(item)
-
-        logging.info(structure)
-
-        if await bot.warnings.find_by_id(key.lower()) == None:
-            await bot.warnings.insert(structure)
-        else:
-            await bot.warnings.update(structure)
-bot.warning_json_to_mongo = warning_json_to_mongo
-
-# include environment variables
-if environment == "PRODUCTION":
-    bot_token = config("PRODUCTION_BOT_TOKEN")
-    logging.info("Using production token...")
-elif environment == "DEVELOPMENT":
-    try:
-        bot_token = config("DEVELOPMENT_BOT_TOKEN")
-    except decouple.UndefinedValueError:
-        bot_token = ""
-    logging.info("Using development token...")
-elif environment == "ALPHA":
-    try:
-        bot_token = config("ALPHA_BOT_TOKEN")
-    except decouple.UndefinedValueError:
-        bot_token = ""
-    logging.info("Using ERM V4 Alpha token...")
-elif environment == "CUSTOM":
-    bot_token = config("CUSTOM_BOT_TOKEN")
-    logging.info("Using custom bot token...")
-else:
-    raise Exception("Invalid environment")
-try:
-    mongo_url = config("MONGO_URL", default=None)
-except decouple.UndefinedValueError:
-    mongo_url = ""
-
-
-intents = discord.Intents.default()
-intents.message_content = True
-intents.members = True
-intents.voice_states = True
-
-scope = [
-    "https://spreadsheets.google.com/feeds",
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive.file",
-    "https://www.googleapis.com/auth/drive",
-]
-
-credentials_dict = {
-    "type": config("TYPE", default=""),
-    "project_id": config("PROJECT_ID", default=""),
-    "private_key_id": config("PRIVATE_KEY_ID", default=""),
-    "private_key": config("PRIVATE_KEY", default="").replace("\\n", "\n"),
-    "client_email": config("CLIENT_EMAIL", default=""),
-    "client_id": config("CLIENT_ID", default=""),
-    "auth_uri": config("AUTH_URI", default=""),
-    "token_uri": config("TOKEN_URI", default=""),
-    "auth_provider_x509_cert_url": config("AUTH_PROVIDER_X509_CERT_URL", default=""),
-    "client_x509_cert_url": config("CLIENT_X509_CERT_URL", default=""),
-}
-
-class ServerCountStatus(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-        self.update_status.start()
-
-    @tasks.loop(minutes=5)  # updates every 5 minutes (you can change it)
-    async def update_status(self):
-        await self.bot.wait_until_ready()
-        guild_count = len(self.bot.guilds)
-        await self.bot.change_presence(
-            activity=discord.Activity(
-                type=discord.ActivityType.watching,
-                name=f"{guild_count} servers"
-            )
-        )
-
-    @update_status.before_loop
-    async def before_update(self):
-        await self.bot.wait_until_ready()
-
-async def setup(bot):
-    await bot.add_cog(ServerCountStatus(bot))
-
+# --- RUN FUNCTION WITH GLOBAL SYNC PROMPT ---
 def run():
     sentry_sdk.init(
         dsn=sentry_url,
@@ -727,6 +370,10 @@ def run():
             "profiles_sample_rate": 1.0,
         },
     )
+
+    # Ask user about global sync
+    user_input = input("Do you want to globally sync commands to all servers? (y/n): ").strip().lower()
+    bot.global_sync = user_input == "y"
 
     try:
         bot.run(bot_token)
@@ -739,6 +386,3 @@ def run():
 
 if __name__ == "__main__":
     run()
-
-
-
