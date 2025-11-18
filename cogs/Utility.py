@@ -21,89 +21,6 @@ class Utility(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-
-    @commands.hybrid_group(
-        name="import",
-        description="Internal Use Command - import data from the recent outage.",
-        extras={"category": "Utility"},
-    )
-    @is_staff()
-    async def import_group(self, ctx: commands.Context):
-        pass
-
-    @import_group.command(
-        name="punishments",
-        description="Import punishments from the outage.",
-        extras={"category": "Utility"},
-    )
-    @commands.cooldown(1, 300, commands.BucketType.guild)
-    @is_management()
-    async def import_punishments(self, ctx: commands.Context, channel: discord.TextChannel=None, time_frame: str=None):
-        if channel is None:
-            channel = ctx.channel
-
-        after = None
-        if time_frame is None:
-            after = datetime.datetime.fromtimestamp(1754516493)
-        else:
-            after = datetime.datetime.fromtimestamp(datetime.datetime.now(tz=pytz.UTC).timestamp() - time_converter(time_frame))
-
-        msg = await ctx.send(
-            embed=discord.Embed(
-                title="Punishments Import",
-                description="> **Channel:** {}\n> **After:** <t:{}:R>\n> **Imported:** 0".format(channel.mention, int(after.timestamp())),
-                color=BLANK_COLOR,
-            ).set_author(name=ctx.guild.name, icon_url=ctx.guild.icon.url if ctx.guild.icon else None)
-        )
-        success = 0
-        async for message in channel.history(limit=None, after=after):
-            embeds = message.embeds
-            if len(embeds) == 0:
-                continue
-            if "ERM" not in message.author.name:
-                continue
-
-            embed = embeds[0]
-            embed_title = embed.title.lower() if embed.title else ""
-            if embed_title != "punishment issued":
-                continue
-
-            fields = embed.fields
-            moderator_field = fields[0]
-            violator_field = fields[1]
-
-            punishment = {}
-            punishment["Moderator"] = ""
-            punishment["ModeratorID"] = int(moderator_field.value.split("<@")[1].split(">")[0])
-            punishment["Snowflake"] = int(moderator_field.value.split("`")[1].split("`")[0])
-            punishment["Reason"] = moderator_field.value.split("Reason:** ")[1].split("\n")[0]
-            punishment["Epoch"] = int(moderator_field.value.split("<t:")[1].split(">")[0])
-            punishment["Username"] = violator_field.value.split("Username:** ")[1].split("\n")[0]
-            punishment["UserID"] = int(violator_field.value.split("`")[1].split("`")[0])
-            punishment["Guild"] = ctx.guild.id
-            punishment["Type"] = violator_field.value.split("Type:** ")[1].split("\n")[0]
-
-            if punishment["Type"] == "Temporary Ban":
-                try:
-                    punishment["UntilEpoch"] = int(violator_field.value.split("Until:** <t:")[1].split(">")[0])
-                except:
-                    punishment["UntilEpoch"] = punishment["Epoch"]
-
-            if await self.bot.punishments.db.find_one({"Snowflake": punishment["Snowflake"]}):
-                continue
-
-            await self.bot.punishments.db.insert_one(punishment)
-            success += 1
-            logging.info(f"Imported punishment: {punishment}")
-            if success % 100 == 0:
-                await msg.edit(
-                    embed=discord.Embed(
-                        title="Punishments Import",
-                        description="> **Channel:** {}\n> **After:** <t:{}:R>\n> **Imported:** `{}`".format(channel.mention, 1754516493, success),
-                        color=BLANK_COLOR,
-                    ).set_author(name=ctx.guild.name, icon_url=ctx.guild.icon.url if ctx.guild.icon else None)
-                )
-
         await msg.edit(
             embed=discord.Embed(
                 title=f"{self.bot.emoji_controller.get_emoji('success')} Import Complete",
@@ -526,3 +443,4 @@ class Utility(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Utility(bot))
+
