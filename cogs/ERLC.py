@@ -1857,6 +1857,6 @@ async def shutdown_server(self, ctx: commands.Context):
             )
         )
         await self.secure_logging(guild_id, ctx.author.id, "Command", command)
-
+        
 async def setup(bot):
     await bot.add_cog(ERLC(bot))
