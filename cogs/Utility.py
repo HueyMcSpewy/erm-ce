@@ -20,11 +20,14 @@ from erm import is_staff, is_management
 class Utility(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        # Do NOT use await here
+        # Any async stuff must go in a command or separate async function
 
+    async def send_import_complete(self, msg, success):
         await msg.edit(
             embed=discord.Embed(
                 title=f"{self.bot.emoji_controller.get_emoji('success')} Import Complete",
-                description="Successfully imported **{}** punishments.".format(success),
+                description=f"Successfully imported **{success}** punishments.",
                 color=GREEN_COLOR,
             )
         )
@@ -443,5 +446,6 @@ class Utility(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Utility(bot))
+
 
 
