@@ -18,22 +18,13 @@ from erm import is_staff, is_management
 
 
 class Utility(commands.Cog):
-   # Fix all import group commands
-import_group: app_commands.Group = app_commands.Group(
-    name="import",
-    description="Commands for importing data"
-)
-
     def __init__(self, bot):
         self.bot = bot
-        # Do NOT use await here
-        # Any async stuff must go in a command or separate async function
 
-    async def send_import_complete(self, msg, success):
         await msg.edit(
             embed=discord.Embed(
                 title=f"{self.bot.emoji_controller.get_emoji('success')} Import Complete",
-                description=f"Successfully imported **{success}** punishments.",
+                description="Successfully imported **{}** punishments.".format(success),
                 color=GREEN_COLOR,
             )
         )
@@ -452,7 +443,3 @@ import_group: app_commands.Group = app_commands.Group(
 
 async def setup(bot):
     await bot.add_cog(Utility(bot))
-
-
-
-
