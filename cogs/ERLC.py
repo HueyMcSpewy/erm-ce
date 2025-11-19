@@ -75,7 +75,7 @@ class ERLC(commands.Cog):
     async def mc(self, ctx: commands.Context):
         pass
 
-    @mc.command(name="link", description="Link your Maple County server with ERM!")
+    @mc.command(name="link", description="Link your Maple County server with ERM CE!")
     @is_management()
     async def mc_link(self, ctx: commands.Context, *, server_name: str):
         # get the linked roblox user
@@ -1038,7 +1038,7 @@ class ERLC(commands.Cog):
 
     @server.command(
         name="unlink",
-        description="Unlink your ER:LC server from ERM!",
+        description="Unlink your ER:LC server from ERM CE!",
     )
     @is_management()
     @is_server_linked()
@@ -1801,7 +1801,62 @@ class ERLC(commands.Cog):
                 ),
                 view=None,
             )
+            
+@server.command(
+    name="Shutdown",
+    description="Shutdown the ER:LC server."
+)
+@is_staff()
+@is_server_linked()
+async def shutdown_server(self, ctx: commands.Context):
+    guild_id = ctx.guild.id
+    command = ":shutdown"
 
+    # Check if elevation is required for shutdown
+    settings = await self.bot.settings.find_by_id(guild_id) or {}
+    erlc_settings = settings.get("ERLC", {})
+    elevation_required = erlc_settings.get("elevation_required", True)
+
+    # Check if user has elevated privileges
+    status: ServerStatus = await self.bot.prc_api.get_server_status(guild_id)
+    elevated_privileges = any(
+        int(item) == int((await self.bot.bloxlink.find_roblox(ctx.author.id) or {}).get("robloxID", 0))
+        for item in status.co_owner_ids + [status.owner_id]
+    )
+
+    if elevation_required and not elevated_privileges:
+        await self.secure_logging(guild_id, ctx.author.id, "Command", command, True)
+        embed = discord.Embed(
+            title="Not Authorized",
+            description="This command is privileged and requires special elevation.",
+            color=BLANK_COLOR,
+        )
+        if ctx.interaction:
+            await ctx.interaction.followup.send(embed=embed, ephemeral=True)
+        else:
+            await ctx.send(embed=embed)
+        return
+
+    # Run the shutdown command
+    command_response = await self.bot.prc_api.run_command(guild_id, command)
+    if command_response[0] == 200:
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"{self.bot.emoji_controller.get_emoji('success')} Successfully Sent",
+                description="The ER:LC server has been successfully shutdown.",
+                color=GREEN_COLOR,
+            )
+        )
+        await self.secure_logging(guild_id, ctx.author.id, "Command", command)
+    else:
+        await ctx.send(
+            embed=discord.Embed(
+                title="Not Executed",
+                description="The ER:LC server has not been successfully shutdown.",
+                color=BLANK_COLOR,
+            )
+        )
+        await self.secure_logging(guild_id, ctx.author.id, "Command", command)
 
 async def setup(bot):
     await bot.add_cog(ERLC(bot))
