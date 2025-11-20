@@ -45,8 +45,8 @@ class OAuth2(commands.Cog):
         timestamp = time.time()
         verification_message = {
             "embed": discord.Embed(
-                title="Verify with ERM",
-                description="**To link your account with ERM, click the button below.**\nIf you encounter an error, please contact ERM Support by running `/support`.",
+                title="Verify with ERM CE",
+                description="**To link your account with ERM CE, click the button below.**\nIf you encounter an error, please contact ERM Support by running `/support`.",
                 color=BLANK_COLOR,
             ),
             "view": AccountLinkingMenu(self.bot, ctx.author, ctx.interaction),
@@ -70,7 +70,7 @@ class OAuth2(commands.Cog):
                     await msg.edit(
                         embed=discord.Embed(
                             title=f"{self.bot.emoji_controller.get_emoji('success')} Linked",
-                            description="Your Roblox account has been successfully linked to ERM.",
+                            description="Your Roblox account has been successfully linked to ERM CE.",
                             color=GREEN_COLOR,
                         )
                     )
@@ -83,7 +83,7 @@ class OAuth2(commands.Cog):
                         await msg.edit(
                             embed=discord.Embed(
                                 title=f"{self.bot.emoji_controller.get_emoji('success')} Linked",
-                                description="Your Roblox account has been successfully linked to ERM.",
+                                description="Your Roblox account has been successfully linked to ERM CE.",
                                 color=GREEN_COLOR,
                             )
                         )
