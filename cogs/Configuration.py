@@ -64,7 +64,7 @@ class Configuration(commands.Cog):
             msg = await ctx.send(
                 embed=discord.Embed(
                     title="Already Setup",
-                    description="You've already setup ERM in this server! Are you sure you would like to go through the setup process again?",
+                    description="You've already setup ERM CE in this server! Are you sure you would like to go through the setup process again?",
                     color=blank_color,
                 ),
                 view=(confirmation_view := YesNoColourMenu(ctx.author.id)),
@@ -84,7 +84,7 @@ class Configuration(commands.Cog):
             msg = await ctx.send(
                 embed=discord.Embed(
                     title="Let's get started!",
-                    description="To setup ERM, press the arrow button below!",
+                    description="To setup ERM CE, press the arrow button below!",
                     color=blank_color,
                 ),
                 view=(next_view := NextView(bot, ctx.author.id)),
@@ -93,7 +93,7 @@ class Configuration(commands.Cog):
             await msg.edit(
                 embed=discord.Embed(
                     title="Let's get started!",
-                    description="To setup ERM, press the arrow button below!",
+                    description="To setup ERM CE, press the arrow button below!",
                     color=blank_color,
                 ),
                 view=(next_view := NextView(bot, ctx.author.id)),
@@ -242,7 +242,7 @@ class Configuration(commands.Cog):
             embed=discord.Embed(
                 title="Basic Settings",
                 description=(
-                    "**Staff Role:** A staff role is the role that is going to be able to use most ERM commands. You'd assign this role to the people you want to be able to use ERM's core functionalities.\n\n"
+                    "**Staff Role:** A staff role is the role that is going to be able to use most ERM CE commands. You'd assign this role to the people you want to be able to use ERM CE's core functionalities.\n\n"
                     "**Admin Role:** An admin role is the role that can manage LOAs, RAs & other peoples' shifts but it can not use server manage and config.\n\n"
                     "**Management Role:** A management role is the roles of your server management members. These people will be able to delete punishments, modify people's shift time, and accept LOA Requests.\n\n"
                     "**Prefix:** This will be a prefix you are able to use instead of our slash command system. You can use this prefix to execute commands slightly faster and to take advantage of some extra features."
@@ -433,7 +433,7 @@ class Configuration(commands.Cog):
             embed=discord.Embed(
                 title=f"{self.bot.emoji_controller.get_emoji('log')} ROBLOX Punishments",
                 description=(
-                    "**What is the ROBLOX Punishments module?** The ROBLOX Punishments module allows for members of your Staff Team to log punishments against a ROBLOX player using ERM! You can specify custom types of punishments, where they will go, as well as manage and search individual punishments.\n\n"
+                    "**What is the ROBLOX Punishments module?** The ROBLOX Punishments module allows for members of your Staff Team to log punishments against a ROBLOX player using ERM CE! You can specify custom types of punishments, where they will go, as well as manage and search individual punishments.\n\n"
                     "**Enabled:** This setting toggles the ROBLOX Punishments module. When enabled, staff members will be able to use `/punish`, and management members will be able to additionally use `/punishment manage`.\n\n"
                     "**Punishments Channel:** This is where most punishments made with the ROBLOX Punishments go. Any logged actions of a ROBLOX player will go to this channel."
                 ),
@@ -551,7 +551,7 @@ class Configuration(commands.Cog):
         await msg.edit(
             embed=discord.Embed(
                 title=f'{self.bot.emoji_controller.get_emoji("success")} Success!',
-                description="You are now setup with ERM, and have finished the Setup Wizard! You should now be able to use ERM in your staff team. If you'd like to change any of these settings, use `/config`!\n\n**ERM has lots more modules than what's mentioned here! You can enable them by going into `/config`!**",
+                description="You are now setup with ERM CE, and have finished the Setup Wizard! You should now be able to use ERM CE in your staff team. If you'd like to change any of these settings, use `/config`!\n\n**ERM CE has lots more modules than what's mentioned here! You can enable them by going into `/config`!**",
                 color=0x1FD373,
             ),
             view=None,
@@ -560,7 +560,7 @@ class Configuration(commands.Cog):
     @commands.guild_only()
     @commands.hybrid_command(
         name="config",
-        description="View your ERM settings",
+        description="View your ERM CE settings",
         aliases=["settings"],
         extras={"category": "Configuration"},
     )
@@ -930,7 +930,7 @@ class Configuration(commands.Cog):
             ctx.author.id,
             [
                 (
-                    "ERM Log Channel",
+                    "ERM CE Log Channel",
                     [
                         (
                             discord.utils.get(ctx.guild.channels, id=channel)
@@ -1013,7 +1013,7 @@ class Configuration(commands.Cog):
                 discord.Embed(
                     title="Basic Settings",
                     description=(
-                        "**Staff Role:** A staff role is the role that is going to be able to use most ERM commands. You'd assign this role to the people you want to be able to use ERM's core functionalities.\n\n"
+                        "**Staff Role:** A staff role is the role that is going to be able to use most ERM CE commands. You'd assign this role to the people you want to be able to use ERM CE's core functionalities.\n\n"
                         "**Admin Role:** An admin role is the role that can manage LOAs, RAs & other peoples' shifts but it can not use server manage and config.\n\n"
                         "**Management Role:** A management role is the roles of your server management members. These people will be able to delete punishments, modify people's shift time, and accept LOA Requests.\n\n"
                         "**Prefix:** This will be a prefix you are able to use instead of our slash command system. You can use this prefix to execute commands slightly faster and to take advantage of some extra features."
@@ -1050,7 +1050,7 @@ class Configuration(commands.Cog):
                 discord.Embed(
                     title="ROBLOX Punishments",
                     description=(
-                        "**What is the ROBLOX Punishments module?** The ROBLOX Punishments module allows for members of your Staff Team to log punishments against a ROBLOX player using ERM! You can specify custom types of punishments, where they will go, as well as manage and search individual punishments.\n\n"
+                        "**What is the ROBLOX Punishments module?** The ROBLOX Punishments module allows for members of your Staff Team to log punishments against a ROBLOX player using ERM CE! You can specify custom types of punishments, where they will go, as well as manage and search individual punishments.\n\n"
                         "**Enabled:** This setting toggles the ROBLOX Punishments module. When enabled, staff members will be able to use `/punish`, and management members will be able to additionally use `/punishment manage`.\n\n"
                         "**Punishments Channel:** This is where most punishments made with the ROBLOX Punishments go. Any logged actions of a ROBLOX player will go to this channel."
                     ),
@@ -1063,7 +1063,7 @@ class Configuration(commands.Cog):
                         "**Enabled:** Game Security is a module that aims to protect private servers from abuse of administrative privileges. This only works for particular games and servers. You should disable this if you aren't a game listed above.\n\n"
                         "**Webhook Channel:** This channel is where the bot will read the webhooks from the game server. This is not where alerts will be sent. Rather, this is where the bot will detect any admin abuse.\n\n"
                         "**Alert Channel:** This channel is where the bot will send the corresponding alerts for abuse of administrative privileges in your private server. It is recommended for this not to be the same as your Webhook Channel so that you don't miss any unresolved Security Alerts.\n\n"
-                        "**Mentionables:** These roles will be mentioned when a security alert is sent by ERM. All of these roles will be mentioned in the message, and they should be able to deal with the situation at hand for maximum staff efficiency."
+                        "**Mentionables:** These roles will be mentioned when a security alert is sent by ERM CE. All of these roles will be mentioned in the message, and they should be able to deal with the situation at hand for maximum staff efficiency."
                     ),
                     color=blank_color,
                 ),
@@ -1087,10 +1087,10 @@ class Configuration(commands.Cog):
                     title="Anti-Ping",
                     color=blank_color,
                     description=(
-                        "**What is Anti-Ping?** Anti-ping is an ERM module which specialises in preventing mention abuse of High Ranks within a Discord server. ERM detects if an unauthorized individual mentions a High Ranking individual, and notifies them to discontinue any further attempts to violate the server's regulations.\n\n"
-                        "**Enabled:** This setting dictates whether ERM will take action upon these users, and intervene when necessary. When disabled, the Anti-Ping module will not activate.\n\n"
-                        "**Affected Roles:** These roles clarify the individuals who are affected by Anti-Ping, and are classed as important individuals to ERM. An individual who pings someone with these affected roles, will activate Anti-Ping.\n\n"
-                        "**Bypass Roles:** An individual who holds one of these roles will not be able to trigger Anti-Ping filters, and will be able to ping any individual within the Affected Roles list without ERM intervening.\n\n"
+                        "**What is Anti-Ping?** Anti-ping is an ERM CE module which specialises in preventing mention abuse of High Ranks within a Discord server. ERM CE detects if an unauthorized individual mentions a High Ranking individual, and notifies them to discontinue any further attempts to violate the server's regulations.\n\n"
+                        "**Enabled:** This setting dictates whether ERM CE will take action upon these users, and intervene when necessary. When disabled, the Anti-Ping module will not activate.\n\n"
+                        "**Affected Roles:** These roles clarify the individuals who are affected by Anti-Ping, and are classed as important individuals to ERM CE. An individual who pings someone with these affected roles, will activate Anti-Ping.\n\n"
+                        "**Bypass Roles:** An individual who holds one of these roles will not be able to trigger Anti-Ping filters, and will be able to ping any individual within the Affected Roles list without ERM CE intervening.\n\n"
                         "**Use Hierarchy:** This setting dictates whether Anti-Ping will take into account role hierarchy for each of the affected roles. For example, if you set Moderation as an affected role, it would also apply for all roles above Moderation, such as Administration or Management."
                     ),
                 ),
@@ -1098,17 +1098,17 @@ class Configuration(commands.Cog):
                     title="ER:LC Integration",
                     color=blank_color,
                     description=(
-                        "**What is the ER:LC Integration?** ER:LC Integration allows for ERM to communicate with the Police Roleplay Community APIs, and your Emergency Response: Liberty County server. In particular, these configurations allow for Join Logs, Leave Logs, and Kill Logs to be logged.\n\n"
-                        "**Elevation Required:** This setting dictates whether elevated permissions are required to run commands such as `:admin` and `:unadmin`. In such case where this is enabled, Co-Owner permissions are required to run these commands to prevent security risk. If disabled, those with the Management Roles in your server can run these commands. **It is advised you keep this enabled unless you have a valid reason to turn it off.** Contact ERM Support if you are unsure what this setting does.\n\n"
-                        "**Player Logs Channel:** This channel is where Player Join and Leave logs will be sent by ERM. ERM will check your server every 45 seconds to see if new members have joined or left, and report of their time accordingly.\n\n"
-                        "**Kill Logs Channel:** This setting is where Kill Logs will be sent by ERM. ERM will check your server every 45 seconds and constantly contact your ER:LC private server to know if there are any new kill logs. If there are, to log them in the corresponding channel."
+                        "**What is the ER:LC Integration?** ER:LC Integration allows for ERM CE to communicate with the Police Roleplay Community APIs, and your Emergency Response: Liberty County server. In particular, these configurations allow for Join Logs, Leave Logs, and Kill Logs to be logged.\n\n"
+                        "**Elevation Required:** This setting dictates whether elevated permissions are required to run commands such as `:admin` and `:unadmin`. In such case where this is enabled, Co-Owner permissions are required to run these commands to prevent security risk. If disabled, those with the Management Roles in your server can run these commands. **It is advised you keep this enabled unless you have a valid reason to turn it off.** Contact ERM CE Support if you are unsure what this setting does.\n\n"
+                        "**Player Logs Channel:** This channel is where Player Join and Leave logs will be sent by ERM CE. ERM CE will check your server every 45 seconds to see if new members have joined or left, and report of their time accordingly.\n\n"
+                        "**Kill Logs Channel:** This setting is where Kill Logs will be sent by ERM CE. ERM will check your server every 45 seconds and constantly contact your ER:LC private server to know if there are any new kill logs. If there are, to log them in the corresponding channel."
                     ),
                 ),
                 discord.Embed(
                     title="ERM Logging",
                     color=blank_color,
                     description=(
-                        "**ERM Log Channel:** This channel is where ERM will log all administrative commands and configuration changes made by Admin & Management Roles. This is useful for auditing purposes, ensuring transparency, and detecting any potential abuse of administrative privileges. This is a critical part of ERM and should be enabled for all servers using ERM.\n\n"
+                        "**ERM CE Log Channel:** This channel is where ERM CE will log all administrative commands and configuration changes made by Admin & Management Roles. This is useful for auditing purposes, ensuring transparency, and detecting any potential abuse of administrative privileges. This is a critical part of ERM CE and should be enabled for all servers using ERM CE.\n\n"
                         "All commands such as Duty Admin, LOA Admin, RA Admin, Server Manage, Config, etc., as well as nearly all configuration changes, will be logged in this channel."
                     ),
                 ),
@@ -1116,7 +1116,7 @@ class Configuration(commands.Cog):
                     title="Priority Requests",
                     color=blank_color,
                     description=(
-                        "**Blacklisted Roles:** These are the roles which are unable to use the ERM Priority Request system. They will not be able to submit priority requests if they have any of these roles.\n\n"
+                        "**Blacklisted Roles:** These are the roles which are unable to use the ERM CE Priority Request system. They will not be able to submit priority requests if they have any of these roles.\n\n"
                         "**Mentioned Roles:** When a priority request is submitted, these roles will be mentioned in the accompanying message advising staff in regards to the priority request.\n\n"
                         "**Priority Channel:** This channel will be where priority requests are submitted, and where the message advising staff in regards to the priority request will be sent."
                     ),
@@ -1125,7 +1125,7 @@ class Configuration(commands.Cog):
                     title="Maple County Integration",
                     color=blank_color,
                     description=(
-                        "**What is the Maple County Integration?**\nThe Maple County Integration allows for ERM to communicate with the Maple County APIs, and your Maple County server. In particular, these configurations allow for configuration of various Maple County-specific supported features and settings.\n\n"
+                        "**What is the Maple County Integration?**\nThe Maple County Integration allows for ERM CE to communicate with the Maple County APIs, and your Maple County server. In particular, these configurations allow for configuration of various Maple County-specific supported features and settings.\n\n"
                     )
                 )
             ]
@@ -1160,7 +1160,7 @@ class Configuration(commands.Cog):
     @commands.guild_only()
     @server.command(
         name="manage",
-        description="Manage your server's ERM data!",
+        description="Manage your server's ERM CE data!",
         extras={"category": "Configuration"},
     )
     @is_management()
@@ -1172,9 +1172,9 @@ class Configuration(commands.Cog):
             discord.Embed(
                 title="Introduction",
                 description=(
-                    "This **Server Management Panel** allows individuals who have access to it, to manage your data regarding ERM on your server. This contains any of the data contained within the 3 main modules, which are Activity Notices, ROBLOX Punishments, and Shift Logging.\n\n"
+                    "This **Server Management Panel** allows individuals who have access to it, to manage your data regarding ERM CE on your server. This contains any of the data contained within the 3 main modules, which are Activity Notices, ROBLOX Punishments, and Shift Logging.\n\n"
                     "Using this panel, you can clear certain parts of data, or erase the data of a particular module in its entirety. For some modules, you can also erase its data by a particular specification - such as removing all punishments from a punishment type.\n\n"
-                    "Members with **Management** permissions can access this panel, and erase your server's data, so ensure you only give this access to people who you trust. As with particular parts of this panel, some actions are reversible when contacting ERM Support."
+                    "Members with **Management** permissions can access this panel, and erase your server's data, so ensure you only give this access to people who you trust. As with particular parts of this panel, some actions are reversible when contacting ERM CE Support."
                 ),
                 color=BLANK_COLOR,
             ).set_author(name=ctx.guild.name, icon_url=ctx.guild.icon),
@@ -1189,7 +1189,7 @@ class Configuration(commands.Cog):
             discord.Embed(
                 title="ROBLOX Punishments",
                 description=(
-                    "ROBLOX Punishments allow for staff members to log their punishments on the ROBLOX platform using ERM. ERM allows a robust experience for a staff member utilising this module, as commands are easy to learn and execute, as well as to effectively be implemented into a staff member's workflow.\n\n"
+                    "ROBLOX Punishments allow for staff members to log their punishments on the ROBLOX platform using ERM CE. ERM CE allows a robust experience for a staff member utilising this module, as commands are easy to learn and execute, as well as to effectively be implemented into a staff member's workflow.\n\n"
                     "Using this panel, you can **Erase All Punishments**, as well as **Erase Punishments By Type** and **Erase Punishments By Username**."
                 ),
                 color=BLANK_COLOR,
@@ -1197,7 +1197,7 @@ class Configuration(commands.Cog):
             discord.Embed(
                 title="Shift Logging",
                 description=(
-                    'Shift Logging allow for an easy experience for staff members looking to log their active shift time using ERM. Staff members can run simple commands to go "on-duty", as well as go on break to signify unavailability. Once they are ready, they can go "off-duty" to signify that they are no longer available for any administrative action.\n\n'
+                    'Shift Logging allow for an easy experience for staff members looking to log their active shift time using ERM CE. Staff members can run simple commands to go "on-duty", as well as go on break to signify unavailability. Once they are ready, they can go "off-duty" to signify that they are no longer available for any administrative action.\n\n'
                     "Using this panel, you can **Erase All Shifts**, as well as utilise **Erase Past Shifts** and **Erase Active Shifts**. You can also **Erase Shifts By Type**."
                 ),
                 color=BLANK_COLOR,
@@ -1224,3 +1224,4 @@ class Configuration(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Configuration(bot))
+
