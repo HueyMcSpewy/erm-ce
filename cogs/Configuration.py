@@ -48,7 +48,6 @@ class Configuration(commands.Cog):
     @is_management()
     async def _setup(self, ctx: commands.Context):
         await log_command_usage(self.bot, ctx.guild, ctx.author, f"Setup")
-        await ctx.defer() # Acknowledge the interaction to prevent timeout
         bot = self.bot
         from utils.constants import base_configuration
 
@@ -1225,5 +1224,6 @@ class Configuration(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Configuration(bot))
+
 
 
