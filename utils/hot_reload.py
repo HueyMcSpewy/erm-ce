@@ -42,8 +42,8 @@ class HotReload(commands.Cog):
             except commands.ExtensionError:
                 pass
             else:
-                guild = self.bot.get_guild(987798554972143728)
-                channel = guild.get_channel(1055558545250193418)
+                guild = self.bot.get_guild(1403328821121388674)
+                channel = guild.get_channel(1440503011339276308)
                 await channel.send(f"Reloaded extension: {extension}")
             finally:
                 self.last_modified_time[extension] = time
@@ -62,3 +62,4 @@ class HotReload(commands.Cog):
 async def setup(bot):
     cog = HotReload(bot)
     await bot.add_cog(cog)
+
