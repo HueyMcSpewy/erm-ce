@@ -12162,8 +12162,9 @@ class AccountLinkingMenu(discord.ui.View):
         super().__init__(timeout=600.0)
         self.add_item(
             discord.ui.Button(
-                label="Link Roblox",
+                label="Link Roblox ( DISABLED )",
                 url=f"https://authorize.roblox.com/?client_id=5489705006553717980&response_type=code&redirect_uri=https://verify.ermbot.xyz/auth&scope=openid+profile&state={self.user.id}",
+                disabled=True
             )
         )
 
