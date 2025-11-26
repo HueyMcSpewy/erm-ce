@@ -6602,7 +6602,7 @@ class ERMCommandLog(AssociationConfigurationView):
 
     @discord.ui.select(
         cls=discord.ui.ChannelSelect,
-        placeholder="ERM Log Channel",
+        placeholder="ERM CE Log Channel",
         row=0,
         max_values=1,
         min_values=0,
