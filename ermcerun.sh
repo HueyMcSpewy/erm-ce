@@ -11,7 +11,7 @@ if [ ! -f /erm-ce/venv/bin/activate ]; then
 fi
 
 # Ensure MongoDB container is running
-if ! docker ps --filter "name=mongodb" --filter "status=running" | grep -q mongodb; then
+if ! docker ps --filter "name=mongo" --filter "status=running" | grep -q mongodb; then
     echo "MongoDB container is not running. Please start it first."
     exit 1
 fi
