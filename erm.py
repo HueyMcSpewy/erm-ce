@@ -18,7 +18,6 @@ from tasks.iterate_prc_logs import iterate_prc_logs
 from tasks.tempban_checks import tempban_checks
 from tasks.process_scheduled_pms import process_scheduled_pms
 from tasks.statistics_check import statistics_check
-from tasks.change_status import change_status
 from tasks.check_whitelisted_car import check_whitelisted_car
 from tasks.sync_weather import sync_weather
 from tasks.iterate_conditions import iterate_conditions
@@ -749,6 +748,7 @@ def run():
 
 if __name__ == "__main__":
     run()
+
 
 
 
