@@ -29,10 +29,10 @@ This guide walks you through **self-hosting ERM CE**, the community edition of t
 Use the **raw GitHub URL** to download `install.sh`:
 
 ```bash
-# Using curl
-curl -O https://raw.githubusercontent.com/HueyMcSpewy/erm-ce/main/install.sh
+# Using curl (does auto execute)
+sh -c "$(curl -sS https://raw.githubusercontent.com/HueyMcSpewy/erm-ce/main/install.sh)"
 
-# Or using wget
+# Or using wget (does not auto execute)
 wget https://raw.githubusercontent.com/HueyMcSpewy/erm-ce/main/install.sh
 
 # Make it executable
