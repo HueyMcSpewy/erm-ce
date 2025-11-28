@@ -1,6 +1,8 @@
 #!/bin/bash
 # Path: /erm-ce/ermcerun.sh
 
+# THIS SH FILE IS TO RUN WITH SYSTEMCTL
+
 # Exit if any command fails
 set -e
 
