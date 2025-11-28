@@ -342,9 +342,6 @@ class Bot(commands.AutoShardedBot):
         check_whitelisted_car.start(bot)
         logging.info("Starting the Check Whitelisted Car task...")
         if self.environment != "CUSTOM":
-            await asyncio.sleep(30)
-            change_status.start(bot)
-        logging.info("Starting the Change Status task...")
         await asyncio.sleep(30)
         process_scheduled_pms.start(bot)
         logging.info("Starting the Process Scheduled PMs task...")
@@ -748,6 +745,7 @@ def run():
 
 if __name__ == "__main__":
     run()
+
 
 
 
