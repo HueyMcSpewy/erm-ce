@@ -6602,15 +6602,17 @@ class ERMCommandLog(AssociationConfigurationView):
 
     @discord.ui.select(
         cls=discord.ui.ChannelSelect,
-        placeholder="ERM Log Channel",
         row=0,
         max_values=1,
         min_values=0,
-        channel_types=[discord.ChannelType.text],
+        channel_types=[discord.ChannelType.text]
     )
     async def command_log_channel_select(
-        self, interaction: discord.Interaction, select: discord.ui.Select
+        self, interaction: discord.Interaction, select: discord.ui.ChannelSelect
     ):
+        # Set placeholder *here* because ChannelSelect supports it this way
+        select.placeholder = "ERM CE Log Channel"  # <- Change this safely
+
         value = await self.interaction_check(interaction)
         if not value:
             return
@@ -6620,16 +6622,19 @@ class ERMCommandLog(AssociationConfigurationView):
 
         bot = self.bot
         sett = await bot.settings.find_by_id(guild_id)
+
         try:
             sett["staff_management"]["erm_log_channel"] = select.values[0].id
         except KeyError:
             sett["staff_management"] = {"erm_log_channel": select.values[0].id}
+
         await bot.settings.update_by_id(sett)
+
         await config_change_log(
             self.bot,
             interaction.guild,
             interaction.user,
-            f"ERM Log Channel Set: <#{select.values[0].id}>",
+            f"ERM Log Channel Set: <#{select.values[0].id}>"
         )
 
 
