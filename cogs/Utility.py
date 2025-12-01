@@ -100,7 +100,7 @@ class Utility(commands.Cog):
     @commands.hybrid_command(
         name="modpanel",
         aliases=["panel"],
-        description="Get the link to this server's mod panel.",
+        description="Get the link to this server's mod panel, Please note that the website is currently non functional.",
         extras={"category": "Website"},
         hidden=True,
     )
@@ -112,7 +112,7 @@ class Utility(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 color=BLANK_COLOR,
-                description="Visit your server's Moderation Panel using the button below.",
+                description="Visit your server's Moderation Panel using the button below, Please note that the website is currently non functional.",
             ).set_author(name=ctx.guild.name, icon_url=guild_icon),
             view=LinkView(
                 label="Mod Panel", url=f"https://ermce.hueymcspewy.online/{ctx.guild.id}/panel"
@@ -122,7 +122,7 @@ class Utility(commands.Cog):
     @commands.hybrid_command(
         name="dashboard",
         aliases=["dash", "applications"],
-        description="Get the link to manage your server through the dashboard.",
+        description="Get the link to manage your server through the dashboard, Please note that the website is currently non functional.",
         extras={"category": "Website"},
         hidden=True,
     )
@@ -133,7 +133,7 @@ class Utility(commands.Cog):
         await ctx.send(
             embed=discord.Embed(
                 color=BLANK_COLOR,
-                description="Visit your server's Dashboard using the button below.",
+                description="Visit your server's Dashboard using the button below, Please note that the website is currently non functional.",
             ).set_author(name=ctx.guild.name, icon_url=guild_icon),
             view=LinkView(
                 label="Dashboard", url=f"https://ermce.hueymcspewy.online/{ctx.guild.id}/dashboard"
@@ -148,7 +148,7 @@ class Utility(commands.Cog):
     )
     async def support_server(self, ctx):
         # using an embed
-        # [**Support Server**](https://discord.com/invite/SDGXCybx)
+        # [**Support Server**](https://discord.com/invite/vBdnMbkMHG)
 
         await ctx.reply(
             embed=discord.Embed(
@@ -156,7 +156,7 @@ class Utility(commands.Cog):
                 description="You can join the ERM CE Support Discord server using the button below.",
                 color=BLANK_COLOR,
             ),
-            view=LinkView(label="Support Server", url="https://discord.com/invite/SDGXCybx"),
+            view=LinkView(label="Support Server", url="https://discord.com/invite/vBdnMbkMHG"),
         )
 
     @commands.hybrid_command(
@@ -167,7 +167,7 @@ class Utility(commands.Cog):
     )
     async def about(self, ctx):
         # using an embed
-        # [**Support Server**](https://discord.com/invite/SDGXCybx)
+        # [**Support Server**](https://discord.com/invite/vBdnMbkMHG)
         embed = discord.Embed(
             title="About ERM",
             color=BLANK_COLOR,
@@ -177,10 +177,10 @@ class Utility(commands.Cog):
         embed.add_field(
             name=f"Bot Information",
             value=(
-                # "> **Website:** [View Website](https://ermbot.xyz)\n"
-                "> **Support:** [Join Server](https://discord.com/invite/SDGXCybx)\n"
+                # "> **Website:** [View Website](https://ermce.hueymcspewy.online)\n"
+                "> **Support:** [Join Server](https://discord.com/invite/vBdnMbkMHG)\n"
                 f"> **Invite:** [Invite Bot](https://discord.com/oauth2/authorize?client_id=1439512432665169961)\n"
-                # "> **Documentation:** [View Documentation](https://docs.ermbot.xyz)\n"
+                # "> **Documentation:** [View Documentation](https://docs.ermce.hueymcspewy.online)\n"
             ),
             inline=False,
         )
@@ -194,94 +194,95 @@ class Utility(commands.Cog):
     async def api(self, ctx):
         pass
 
-    @commands.guild_only()
-    @api.command(
-        name="generate",
-        description="Generate an API key for your server",
-        extras={"category": "Utility"},
-        hidden=True,
-    )
-    @is_management()
-    @require_settings()
-    async def api_generate(self, ctx: commands.Context):
-        view = APIKeyConfirmation(ctx.author.id)
-        msg = await ctx.send(
-            embed=discord.Embed(
-                title="Generate API Key",
-                description="Are you sure you want to generate an API key? This will invalidate any existing keys.",
-                color=BLANK_COLOR,
-            ),
-            view=view,
-            ephemeral=isinstance(ctx.interaction, discord.Interaction),
+#    @commands.guild_only()
+#    @api.command(
+#        name="generate",
+#        description="Generate an API key for your server",
+#        extras={"category": "Utility"},
+#        hidden=True,
+#    )
+#    @is_management()
+#    @require_settings()
+#    async def api_generate(self, ctx: commands.Context):
+#        view = APIKeyConfirmation(ctx.author.id)
+#        msg = await ctx.send(
+#            embed=discord.Embed(
+#                title="Generate API Key",
+#                description="Are you sure you want to generate an API key? This will invalidate any existing keys.",
+#                color=BLANK_COLOR,
+#            ),
+#            view=view,
+#            ephemeral=isinstance(ctx.interaction, discord.Interaction),
         )
-
-        await view.wait()
-        if not view.value:
-            return
-
-        api_url = f"{config('OPENERM_API_URL')}/api/v1/auth/token"
-        auth_token = config("OPENERM_AUTH_TOKEN")
-        full_url = f"{api_url}?guild_id={ctx.guild.id}&auth_token={auth_token}"
-
-        async with aiohttp.ClientSession() as session:
-            try:
-                async with session.post(full_url) as response:
-
-                    response_text = await response.text()
-
-                    if response.status == 200:
-                        api_key = response_text
-
-                        if isinstance(ctx.interaction, discord.Interaction):
-                            await ctx.send(
-                                embed=discord.Embed(
-                                    title="API Key Generated",
-                                    description="Here is your API key. Please save it somewhere safe - we won't show it again.",
-                                    color=BLANK_COLOR,
-                                ).add_field(name="API Key", value=f"```{api_key}```"),
-                                ephemeral=True,
-                            )
-                        else:
-                            await ctx.author.send(
-                                embed=discord.Embed(
-                                    title="API Key Generated",
-                                    description="Here is your API key. Please save it somewhere safe - we won't show it again.",
-                                    color=BLANK_COLOR,
-                                ).add_field(name="API Key", value=f"```{api_key}```")
-                            )
-                            await msg.edit(
-                                embed=discord.Embed(
-                                    title=f"{self.bot.emoji_controller.get_emoji('success')} API Key Generated",
-                                    description="I have successfully generated an API key and sent it to your DMs!",
-                                    color=GREEN_COLOR,
-                                ),
-                                view=None,
-                            )
-                    else:
-                        error_msg = f"API returned non-200 status: {response.status}"
-                        logging.error(error_msg)
-                        await ctx.send(
-                            embed=discord.Embed(
-                                title="Error",
-                                description="Failed to generate API key. Please try again later.",
-                                color=BLANK_COLOR,
-                            ),
-                            ephemeral=isinstance(ctx.interaction, discord.Interaction),
-                        )
-            except aiohttp.ClientError as e:
-                error_msg = f"API request failed: {str(e)}"
-                logging.error(error_msg)
-                await ctx.send(
-                    embed=discord.Embed(
-                        title="Error",
-                        description="Failed to connect to API. Please try again later.",
-                        color=BLANK_COLOR,
-                    ),
-                    ephemeral=isinstance(ctx.interaction, discord.Interaction),
-                )
-
-
+#
+#        await view.wait()
+#        if not view.value:
+#            return
+#
+#        api_url = f"{config('OPENERM_API_URL')}/api/v1/auth/token"
+#        auth_token = config("OPENERM_AUTH_TOKEN")
+#        full_url = f"{api_url}?guild_id={ctx.guild.id}&auth_token={auth_token}"
+#
+#        async with aiohttp.ClientSession() as session:
+#            try:
+#                async with session.post(full_url) as response:
+#
+#                    response_text = await response.text()
+#
+#                    if response.status == 200:
+#                        api_key = response_text
+#
+#                        if isinstance(ctx.interaction, discord.Interaction):
+#                            await ctx.send(
+#                                embed=discord.Embed(
+#                                    title="API Key Generated",
+#                                    description="Here is your API key. Please save it somewhere safe - we won't show it again.",
+#                                    color=BLANK_COLOR,
+#                                ).add_field(name="API Key", value=f"```{api_key}```"),
+#                                ephemeral=True,
+#                            )
+#                        else:
+#                            await ctx.author.send(
+#                                embed=discord.Embed(
+#                                    title="API Key Generated",
+#                                    description="Here is your API key. Please save it somewhere safe - we won't show it again.",
+#                                    color=BLANK_COLOR,
+#                                ).add_field(name="API Key", value=f"```{api_key}```")
+#                            )
+#                            await msg.edit(
+#                                embed=discord.Embed(
+#                                    title=f"{self.bot.emoji_controller.get_emoji('success')} API Key Generated",
+#                                    description="I have successfully generated an API key and sent it to your DMs!",
+#                                    color=GREEN_COLOR,
+#                                ),
+#                                view=None,
+#                            )
+#                    else:
+#                        error_msg = f"API returned non-200 status: {response.status}"
+#                        logging.error(error_msg)
+#                        await ctx.send(
+#                            embed=discord.Embed(
+#                                title="Error",
+#                                description="Failed to generate API key. Please try again later.",
+#                                color=BLANK_COLOR,
+#                            ),
+#                            ephemeral=isinstance(ctx.interaction, discord.Interaction),
+#                        )
+#            except aiohttp.ClientError as e:
+#                error_msg = f"API request failed: {str(e)}"
+#                logging.error(error_msg)
+#                await ctx.send(
+#                    embed=discord.Embed(
+#                        title="Error",
+#                        description="Failed to connect to API. Please try again later.",
+#                        color=BLANK_COLOR,
+#                    ),
+#                    ephemeral=isinstance(ctx.interaction, discord.Interaction),
+#                )
+#
+#
 async def setup(bot):
     await bot.add_cog(Utility(bot))
+
 
 
