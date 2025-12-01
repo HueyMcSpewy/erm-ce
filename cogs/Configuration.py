@@ -1105,7 +1105,7 @@ class Configuration(commands.Cog):
                     ),
                 ),
                 discord.Embed(
-                    title="ERM Logging",
+                    title="ERM CE Logging",
                     color=blank_color,
                     description=(
                         "**ERM CE Log Channel:** This channel is where ERM CE will log all administrative commands and configuration changes made by Admin & Management Roles. This is useful for auditing purposes, ensuring transparency, and detecting any potential abuse of administrative privileges. This is a critical part of ERM CE and should be enabled for all servers using ERM CE.\n\n"
@@ -1221,9 +1221,18 @@ class Configuration(commands.Cog):
 
         await ctx.send(embed=embeds[0], view=paginator.get_current_view())
 
-
+# TODO
+#    @commands.guild_only()
+#    @server.command(
+#        name="data export",
+#        description="Export the data for your server!",
+#        extras={"category": "Configuration"},
+#    )
+#    @is_management()
+    
 async def setup(bot):
     await bot.add_cog(Configuration(bot))
+
 
 
 
