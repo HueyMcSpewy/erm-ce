@@ -77,7 +77,7 @@ async def validate_authorization(bot: Bot, token: str, disable_static_tokens=Fal
     else:
         return False
 
-
+# This is disabled just here cause i am too lazy to comment out 2000 lines of code lol
 class APIRoutes:
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -2157,3 +2157,4 @@ async def setup(bot):
         await bot.add_cog(ServerAPI(bot))
     except Exception as e:
         logger.error(f"Error setting up ServerAPI cog: {e}")
+
