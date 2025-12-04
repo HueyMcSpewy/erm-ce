@@ -8,7 +8,7 @@ import re
 from collections import defaultdict
 import asyncio
 
-from datamodels.MapleKeys import MapleKeys
+#from datamodels.MapleKeys import MapleKeys
 from datamodels.Whitelabel import Whitelabel
 from tasks.iterate_ics import iterate_ics
 from tasks.check_loa import check_loa
@@ -22,12 +22,12 @@ from tasks.check_whitelisted_car import check_whitelisted_car
 from tasks.sync_weather import sync_weather
 from tasks.iterate_conditions import iterate_conditions
 from tasks.prc_automations import prc_automations
-from tasks.mc_discord_checks import mc_discord_checks
+#from tasks.mc_discord_checks import mc_discord_checks
 from utils.accounts import Accounts
 from utils.emojis import EmojiController
 
 from utils.log_tracker import LogTracker
-from utils.mc_api import MCApiClient
+#from utils.mc_api import MCApiClient
 from utils.mongo import Document
 
 import aiohttp
@@ -188,8 +188,8 @@ class Bot(commands.AutoShardedBot):
             self.settings = Settings(self.db, "settings")
             self.server_keys = ServerKeys(self.db, "server_keys")
 
-            self.maple_county = self.mongo["MapleCounty"]
-            self.mc_keys = MapleKeys(self.maple_county, "Auth")
+#            self.maple_county = self.mongo["MapleCounty"]
+#            self.mc_keys = MapleKeys(self.maple_county, "Auth")
 
             self.staff_connections = StaffConnections(self.db, "staff_connections")
             self.ics = IntegrationCommandStorage(self.db, "logged_command_data")
@@ -218,9 +218,9 @@ class Bot(commands.AutoShardedBot):
                 ),
                 api_key=config("PRC_API_KEY", default="default_api_key"),
             )
-            self.mc_api = MCApiClient(
-                self, base_url=config("MC_API_URL"), api_key=config("MC_API_KEY")
-            )
+#            self.mc_api = MCApiClient(
+#                self, base_url=config("MC_API_URL"), api_key=config("MC_API_KEY")
+#            )
             self.bloxlink = Bloxlink(self, config("BLOXLINK_API_KEY"))
 
             Extensions = [m.name for m in iter_modules(["cogs"], prefix="cogs.")]
@@ -322,8 +322,8 @@ class Bot(commands.AutoShardedBot):
         prc_automations.start(bot)
         logging.info("Starting the ER:LC Discord Checks task...")
         await asyncio.sleep(30)
-        mc_discord_checks.start(bot)
-        logging.info("Starting the MC Discord Checks task...")
+#        mc_discord_checks.start(bot)
+#        logging.info("Starting the MC Discord Checks task...")
         logging.info("All tasks are now running!")
 
 
@@ -709,6 +709,8 @@ def run():
 
 if __name__ == "__main__":
     run()
+
+
 
 
 
