@@ -213,7 +213,7 @@ class Utility(commands.Cog):
 #            ),
 #            view=view,
 #            ephemeral=isinstance(ctx.interaction, discord.Interaction),
-        )
+#        )
 #
 #        await view.wait()
 #        if not view.value:
@@ -283,6 +283,7 @@ class Utility(commands.Cog):
 #
 async def setup(bot):
     await bot.add_cog(Utility(bot))
+
 
 
 
