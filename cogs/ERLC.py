@@ -102,23 +102,23 @@ class ERLC(commands.Cog):
 #            server_token = await self.bot.mc_api.authorize(
 #                roblox_id, server_name, ctx.guild.id
 #            )
-        except prc_api.ResponseFailure:  # yes, this is correct.
-            return await ctx.send(
-                embed=discord.Embed(
-                    title="Server Not Found",
-                    description="We could not find a server you own under the server name provided. Make sure you are linked with ERM CE by running `/link` in any server.",
-                    color=BLANK_COLOR,
-                )
-            )
-
-        await ctx.send(
-            embed=discord.Embed(
-                title=f"{self.bot.emoji_controller.get_emoji('success')} Server Linked",
-                description=f"Your server has been linked with the name `{server_name}`.",
-                color=GREEN_COLOR,
-            )
-        )
-
+#        except prc_api.ResponseFailure:  # yes, this is correct.
+#            return await ctx.send(
+#                embed=discord.Embed(
+#                    title="Server Not Found",
+#                    description="We could not find a server you own under the server name provided. Make sure you are linked with ERM CE by running `/link` in any server.",
+#                    color=BLANK_COLOR,
+#                )
+#            )
+#
+#        await ctx.send(
+#            embed=discord.Embed(
+#                title=f"{self.bot.emoji_controller.get_emoji('success')} Server Linked",
+#                description=f"Your server has been linked with the name `{server_name}`.",
+#                color=GREEN_COLOR,
+#            )
+#        )
+    
 #    @mc.command(
 #        name="info",
 #        description="Get information about the current players in your Maple County server.",
