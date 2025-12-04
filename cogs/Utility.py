@@ -97,48 +97,49 @@ class Utility(commands.Cog):
         embed.set_thumbnail(url=ctx.guild.icon)
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(
-        name="modpanel",
-        aliases=["panel"],
-        description="Get the link to this server's mod panel, Please note that the website is currently non functional.",
-        extras={"category": "Website"},
-        hidden=True,
-    )
-    @is_staff()
-    @require_settings()
-    async def mod_panel(self, ctx: commands.Context):
-        guild_icon = ctx.guild.icon.url if ctx.guild.icon else None
-
-        await ctx.send(
-            embed=discord.Embed(
-                color=BLANK_COLOR,
-                description="Visit your server's Moderation Panel using the button below, Please note that the website is currently non functional.",
-            ).set_author(name=ctx.guild.name, icon_url=guild_icon),
-            view=LinkView(
-                label="Mod Panel", url=f"https://ermce.hueymcspewy.online/{ctx.guild.id}/panel"
-            ),
-        )
-
-    @commands.hybrid_command(
-        name="dashboard",
-        aliases=["dash", "applications"],
-        description="Get the link to manage your server through the dashboard, Please note that the website is currently non functional.",
-        extras={"category": "Website"},
-        hidden=True,
-    )
-    @is_management()
-    async def dashboard(self, ctx: commands.Context):
-        guild_icon = ctx.guild.icon.url if ctx.guild.icon else None
-
-        await ctx.send(
-            embed=discord.Embed(
-                color=BLANK_COLOR,
-                description="Visit your server's Dashboard using the button below, Please note that the website is currently non functional.",
-            ).set_author(name=ctx.guild.name, icon_url=guild_icon),
-            view=LinkView(
-                label="Dashboard", url=f"https://ermce.hueymcspewy.online/{ctx.guild.id}/dashboard"
-            ),
-        )
+# Commented out cause will be added back when website is done 👍    
+#    @commands.hybrid_command(
+#        name="modpanel",
+#        aliases=["panel"],
+#        description="Get the link to this server's mod panel, Please note that the website is currently non functional.",
+#        extras={"category": "Website"},
+#        hidden=True,
+#    )
+#    @is_staff()
+#    @require_settings()
+#    async def mod_panel(self, ctx: commands.Context):
+#        guild_icon = ctx.guild.icon.url if ctx.guild.icon else None
+#
+#        await ctx.send(
+#            embed=discord.Embed(
+#                color=BLANK_COLOR,
+#                description="Visit your server's Moderation Panel using the button below, Please note that the website is currently non functional.",
+#            ).set_author(name=ctx.guild.name, icon_url=guild_icon),
+#            view=LinkView(
+#                label="Mod Panel", url=f"https://ermce.hueymcspewy.online/{ctx.guild.id}/panel"
+#            ),
+#        )
+#
+#    @commands.hybrid_command(
+#        name="dashboard",
+#        aliases=["dash", "applications"],
+#        description="Get the link to manage your server through the dashboard.",
+#        extras={"category": "Website"},
+#        hidden=True,
+#    )
+#    @is_management()
+#    async def dashboard(self, ctx: commands.Context):
+#        guild_icon = ctx.guild.icon.url if ctx.guild.icon else None
+#
+#        await ctx.send(
+#            embed=discord.Embed(
+#                color=BLANK_COLOR,
+#                description="Visit your server's Dashboard using the button below, Please note that the website is currently non functional.",
+#            ).set_author(name=ctx.guild.name, icon_url=guild_icon),
+#            view=LinkView(
+#                label="Dashboard", url=f"https://ermce.hueymcspewy.online/{ctx.guild.id}/dashboard"
+#            ),
+#        )
 
     @commands.hybrid_command(
         name="support",
@@ -283,6 +284,7 @@ class Utility(commands.Cog):
 #
 async def setup(bot):
     await bot.add_cog(Utility(bot))
+
 
 
 
