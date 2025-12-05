@@ -12,19 +12,23 @@ This guide walks you through **self-hosting ERM CE**, the community edition of t
 
 ## 🛠️ Requirements
 
-- Ubuntu 20.04+ or Debian 11+
+- Ubuntu 20.04+ or Debian 11+. **If you're on Windows, you can do this on WSL running Ubuntu**
 - Python 3.9+
 - Discord Bot Token
-- MongoDB connection URI
-- Optional: Sentry URL
-- Optional: Bloxlink API Key
+- MongoDB connection URI **with username and password**
+- Optional: Sentry URL (recommended)
+- Optional: Bloxlink API Key (recommended)
 - A Linux user with `sudo` privileges
 
 ---
 
 ## 🚀 Installation
-
-### 1. Download the installer
+### 1. One-liner that can be run in your terminal
+Use this to install ERM CE in one line:
+```bash
+curl -ssL https://raw.githubusercontent.com/HueyMcSpewy/erm-ce/main/install.sh | bash
+```
+### 2. Or Download the installer
 
 Use the **raw GitHub URL** to download `install.sh`:
 

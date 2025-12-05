@@ -217,9 +217,7 @@ class Bot(commands.AutoShardedBot):
                     "PRC_API_URL", default="https://api.policeroleplay.community/v1"
                 ),
                 api_key=config("PRC_API_KEY", default="default_api_key"),
-            )
-            self.mc_api = MCApiClient(
-                self, base_url=config("MC_API_URL"), api_key=config("MC_API_KEY")
+                
             )
             self.bloxlink = Bloxlink(self, config("BLOXLINK_API_KEY"))
 
@@ -709,6 +707,7 @@ def run():
 
 if __name__ == "__main__":
     run()
+
 
 
 
