@@ -930,7 +930,7 @@ class Configuration(commands.Cog):
             ctx.author.id,
             [
                 (
-                    "ERM Log Channel",
+                    "ERM CE Log Channel",
                     [
                         (
                             discord.utils.get(ctx.guild.channels, id=channel)
@@ -1232,6 +1232,7 @@ class Configuration(commands.Cog):
     
 async def setup(bot):
     await bot.add_cog(Configuration(bot))
+
 
 
 
