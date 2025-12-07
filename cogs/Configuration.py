@@ -991,8 +991,8 @@ class Configuration(commands.Cog):
 #            settings.get("MC", {})
 #        )
 #
-#        pages = []
-#
+        pages = []
+
         for index, view in enumerate(
             [
                 basic_settings_view,
@@ -1233,6 +1233,7 @@ class Configuration(commands.Cog):
     
 async def setup(bot):
     await bot.add_cog(Configuration(bot))
+
 
 
 
