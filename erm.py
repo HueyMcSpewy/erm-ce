@@ -192,7 +192,6 @@ class Bot(commands.AutoShardedBot):
 
             self.staff_connections = StaffConnections(self.db, "staff_connections")
             self.ics = IntegrationCommandStorage(self.db, "logged_command_data")
-            self.actions = Actions(self.db, "actions")
             self.prohibited = ProhibitedUseKeys(self.db, "prohibited_keys")
             self.saved_logs = SavedLogs(self.db, "saved_logs")
             self.whitelabel = Whitelabel(self.mongo["ERMProcessing"], "Instances")
@@ -708,6 +707,7 @@ def run():
 
 if __name__ == "__main__":
     run()
+
 
 
 
