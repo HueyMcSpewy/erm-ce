@@ -30,7 +30,7 @@ from menus import (
     WhitelistVehiclesManagement,
     PriorityRequestConfiguration,
 )
-from ui.MapleCounty import MapleCountyConfiguration
+#from ui.MapleCounty import MapleCountyConfiguration
 from utils.paginators import CustomPage, SelectPagination
 from utils.utils import require_settings, generator, log_command_usage
 
@@ -930,7 +930,7 @@ class Configuration(commands.Cog):
             ctx.author.id,
             [
                 (
-                    "ERM Log Channel",
+                    "ERM CE Log Channel",
                     [
                         (
                             discord.utils.get(ctx.guild.channels, id=channel)
@@ -985,12 +985,12 @@ class Configuration(commands.Cog):
             ],
         )
 
-        maple_county_configuration = MapleCountyConfiguration(
-            bot,
-            ctx.author.id,
-            settings.get("MC", {})
-        )
-
+#        maple_county_configuration = MapleCountyConfiguration(
+#            bot,
+#            ctx.author.id,
+#            settings.get("MC", {})
+#        )
+#
         pages = []
 
         for index, view in enumerate(
@@ -1006,7 +1006,7 @@ class Configuration(commands.Cog):
                 erlc_view,
                 erm_command_log_view,
                 priority_requests,
-                maple_county_configuration,
+#                maple_county_configuration,
             ]
         ):
             corresponding_embeds = [
@@ -1105,7 +1105,7 @@ class Configuration(commands.Cog):
                     ),
                 ),
                 discord.Embed(
-                    title="ERM Logging",
+                    title="ERM CE Logging",
                     color=blank_color,
                     description=(
                         "**ERM CE Log Channel:** This channel is where ERM CE will log all administrative commands and configuration changes made by Admin & Management Roles. This is useful for auditing purposes, ensuring transparency, and detecting any potential abuse of administrative privileges. This is a critical part of ERM CE and should be enabled for all servers using ERM CE.\n\n"
@@ -1119,16 +1119,17 @@ class Configuration(commands.Cog):
                         "**Blacklisted Roles:** These are the roles which are unable to use the ERM CE Priority Request system. They will not be able to submit priority requests if they have any of these roles.\n\n"
                         "**Mentioned Roles:** When a priority request is submitted, these roles will be mentioned in the accompanying message advising staff in regards to the priority request.\n\n"
                         "**Priority Channel:** This channel will be where priority requests are submitted, and where the message advising staff in regards to the priority request will be sent."
-                    ),
-                ),
-                discord.Embed(
-                    title="Maple County Integration",
-                    color=blank_color,
-                    description=(
-                        "**What is the Maple County Integration?**\nThe Maple County Integration allows for ERM CE to communicate with the Maple County APIs, and your Maple County server. In particular, these configurations allow for configuration of various Maple County-specific supported features and settings.\n\n"
                     )
                 )
             ]
+#                discord.Embed(
+#                    title="Maple County Integration",
+#                    color=blank_color,
+#                    description=(
+#                        "**What is the Maple County Integration?**\nThe Maple County Integration allows for ERM CE to communicate with the Maple County APIs, and your Maple County server. In particular, these configurations allow for configuration of various Maple County-specific supported features and settings.\n\n"
+#                    )
+#                )
+#            ]
             embed = corresponding_embeds[index]
             page = CustomPage()
             page.embeds = [embed]
@@ -1221,9 +1222,13 @@ class Configuration(commands.Cog):
 
         await ctx.send(embed=embeds[0], view=paginator.get_current_view())
 
-
 async def setup(bot):
     await bot.add_cog(Configuration(bot))
+
+
+
+
+
 
 
 

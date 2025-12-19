@@ -129,7 +129,7 @@ class Dropdown(discord.ui.Select):
             discord.SelectOption(
                 label="Shift Management",
                 value="shift_management",
-                description="Shifts (duty on, duty off), and where logs should go",
+                description="Shifts (shift on, shift off), and where logs should go",
             ),
             discord.SelectOption(
                 label="Shift Types",
@@ -186,7 +186,7 @@ class ShiftModificationDropdown(discord.ui.Select):
         if other is False:
             options = [
                 discord.SelectOption(
-                    label="On Duty",
+                    label="On Shift",
                     value="on",
                     description="Start your in-game shift",
                 ),
@@ -196,7 +196,7 @@ class ShiftModificationDropdown(discord.ui.Select):
                     description="Taking a break? Toggle your break status",
                 ),
                 discord.SelectOption(
-                    label="Off Duty",
+                    label="Off Shift",
                     value="off",
                     description="End your in-game shift",
                 ),
@@ -209,7 +209,7 @@ class ShiftModificationDropdown(discord.ui.Select):
         else:
             options = [
                 discord.SelectOption(
-                    label="On Duty",
+                    label="On Shift",
                     value="on",
                     description="Start their in-game shift",
                 ),
@@ -219,7 +219,7 @@ class ShiftModificationDropdown(discord.ui.Select):
                     description="Taking a break? Toggle their break status",
                 ),
                 discord.SelectOption(
-                    label="Off Duty",
+                    label="Off Shift",
                     value="off",
                     description="End their in-game shift",
                 ),
@@ -1282,206 +1282,6 @@ class ManageReminders(discord.ui.View):
             )
 
 
-# Update ManageActions to add Discord Commands
-class ManageActions(discord.ui.View):
-    def __init__(self, bot, user_id):
-        super().__init__(timeout=600.0)
-        self.value = None
-        self.bot = bot
-        self.user_id = user_id
-        self.modal: typing.Union[None, CustomModal] = None
-        self.toolkit: typing.Optional[ActionCreationToolkit] = None
-
-    @discord.ui.button(label="Create", style=discord.ButtonStyle.green)
-    async def create(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if interaction.user.id == self.user_id:
-            self.modal = CustomModal(
-                f"Create an Action",
-                [
-                    (
-                        "name",
-                        discord.ui.TextInput(
-                            label="Name",
-                            placeholder="Action Name",
-                            required=True,
-                        ),
-                    )
-                ],
-            )
-            await interaction.response.send_modal(self.modal)
-            await self.modal.wait()
-            self.value = "create"
-            self.toolkit = ActionCreationToolkit(
-                self.bot, self.modal.name.value, self.user_id
-            )
-            embed = discord.Embed(
-                title="Create an Action",
-                description="Using this panel, you can assign integrations to occur when you execute your action. These can affect your ER:LC servers, execute custom commands, and more. These actions will only run when you run `/actions execute` with your action.\n\n**On Execution:**\n > No Integrations",
-                color=BLANK_COLOR,
-            )
-            await interaction.message.edit(embed=embed, view=self.toolkit)
-            timeout = await self.toolkit.wait()
-            if timeout:
-                return
-            await interaction.message.edit(
-                embed=discord.Embed(
-                    title=f"{self.bot.emoji_controller.get_emoji('success')} Successfully Added",
-                    description="I have successfully added this action.",
-                    color=GREEN_COLOR,
-                ),
-                view=None,
-            )
-            self.toolkit.action_data["_id"] = ObjectId()
-            await self.bot.actions.insert(self.toolkit.action_data)
-        else:
-            return await interaction.response.send_message(
-                embed=discord.Embed(
-                    title="Not Permitted",
-                    description="You are not permitted to interact with these buttons.",
-                    color=blank_color,
-                ),
-                ephemeral=True,
-            )
-
-    @discord.ui.button(label="Edit", style=discord.ButtonStyle.secondary)
-    async def edit(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if interaction.user.id == self.user_id:
-            self.modal = CustomModal(
-                f"Edit an Action",
-                [
-                    (
-                        "name",
-                        discord.ui.TextInput(
-                            label="ID",
-                            placeholder="Action ID",
-                            required=True,
-                        ),
-                    )
-                ],
-            )
-            await interaction.response.send_modal(self.modal)
-            await self.modal.wait()
-            actions = [
-                i
-                async for i in self.bot.actions.db.find({"Guild": interaction.guild.id})
-            ]
-            selected_action = None
-            for item in actions:
-                if item["ActionID"] == int(self.modal.name.value):
-                    selected_action = item
-                    break
-            else:
-                return await interaction.response.send_message(
-                    embed=discord.Embed(
-                        title="Not Found",
-                        description="I could not find an action with that ID.",
-                        color=BLANK_COLOR,
-                    ),
-                    ephemeral=True,
-                )
-
-            self.toolkit = ActionCreationToolkit(
-                self.bot, self.modal.name.value, self.user_id
-            )
-            self.toolkit.action_data = selected_action
-            embed = discord.Embed(
-                title="Edit an Action",
-                description="Using this panel, you can assign integrations to occur when you execute your action. These can affect your ER:LC servers, execute custom commands, and more. These actions will only run when you run `/actions execute` with your action.\n\n**On Execution:**\n ",
-                color=BLANK_COLOR,
-            )
-            embed.description += "\n".join(
-                [
-                    f'> **{i["IntegrationName"]}{":** {}".format(i["ExtraInformation"]) if i["ExtraInformation"] is not None else "**"}'
-                    for i in selected_action["Integrations"]
-                ]
-            )
-            embed.description += "\n> *New Integration*"
-            if len(selected_action.get("Conditions", []) or []) != 0:
-                embed.add_field(
-                    name="Conditions",
-                    value="\n".join(
-                        [
-                            f"> **{('`{}`'.format(item.get('LogicGate', '')) + ' ') if item.get('LogicGate') else ''}{item['Variable']}** `{item['Operation']}` {item['Value']}"
-                            for item in selected_action["Conditions"]
-                        ]
-                    ),
-                    inline=False,
-                )
-                embed.add_field(
-                    name="Execution Interval",
-                    value=td_format(
-                        datetime.timedelta(
-                            seconds=selected_action.get(
-                                "ConditionExecutionInterval", 300
-                            )
-                        )
-                    ),
-                    inline=False,
-                )
-            await interaction.message.edit(embed=embed, view=self.toolkit)
-            timeout = await self.toolkit.wait()
-            if timeout:
-                return
-            await interaction.message.edit(
-                embed=discord.Embed(
-                    title=f"{self.bot.emoji_controller.get_emoji('success')} Successfully Edited",
-                    description="I have successfully edited this action.",
-                    color=GREEN_COLOR,
-                ),
-                view=None,
-            )
-
-            await self.bot.actions.update_by_id(self.toolkit.action_data)
-        else:
-            return await interaction.response.send_message(
-                embed=discord.Embed(
-                    title="Not Permitted",
-                    description="You are not permitted to interact with these buttons.",
-                    color=blank_color,
-                ),
-                ephemeral=True,
-            )
-
-    @discord.ui.button(label="Delete", style=discord.ButtonStyle.red)
-    async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if interaction.user.id == self.user_id:
-            self.modal = CustomModal(
-                f"Delete an Action",
-                [
-                    (
-                        "id_value",
-                        discord.ui.TextInput(
-                            label="ID",
-                            placeholder="Action ID",
-                            required=True,
-                        ),
-                    ),
-                ],
-            )
-            await interaction.response.send_modal(self.modal)
-            await self.modal.wait()
-            await self.bot.actions.db.delete_one(
-                {"ActionID": int(self.modal.id_value.value)}
-            )
-            await interaction.response.send_message(
-                embed=discord.Embed(
-                    title=f"{self.bot.emoji_controller.get_emoji('success')} Deleted Action",
-                    description="Action has been deleted successfully.",
-                    color=GREEN_COLOR,
-                )
-            )
-
-        else:
-            return await interaction.response.send_message(
-                embed=discord.Embed(
-                    title="Not Permitted",
-                    description="You are not permitted to interact with these buttons.",
-                    color=blank_color,
-                ),
-                ephemeral=True,
-            )
-
-
 class CustomisePunishmentType(discord.ui.View):
     def __init__(self, user_id):
         super().__init__(timeout=600.0)
@@ -1601,7 +1401,7 @@ class CustomCommandModification(discord.ui.View):
                     "`{server}` - Name of the server this is being ran in.\n"
                     "`{channel}` - Mention of the channel the command is being ran in.\n"
                     "`{prefix}` - The custom prefix of the bot.\n"
-                    "`{onduty}` - Number of staff which are on duty within your server.\n"
+                    "`{onshift}` - Number of staff which are on shift within your server.\n"
                     "\n**PRC Specific Variables**\n"
                     "`{join_code}` - Join Code of the ER:LC server\n"
                     "`{players}` - Current players in the ER:LC server\n"
@@ -3838,7 +3638,7 @@ class ActionCreationToolkit(discord.ui.View):
         actions = [
             "Execute Custom Command",
             "Toggle Reminder",
-            "Force All Staff Off Duty",
+            "Force All Staff Off Shift",
             "Send ER:LC Command",
             "Send ER:LC Message",
             "Send ER:LC Hint",
@@ -3997,7 +3797,7 @@ class ActionCreationToolkit(discord.ui.View):
         correspondents = {
             "Execute Custom Command": 1,
             "Toggle Reminder": 1,
-            "Force All Staff Off Duty": 0,
+            "Force All Staff Off Shift": 0,
             "Send ER:LC Command": 1,
             "Send ER:LC Message": 1,
             "Send ER:LC Hint": 1,
@@ -4032,7 +3832,7 @@ class ActionCreationToolkit(discord.ui.View):
                     "IntegrationID": {
                         "Execute Custom Command": 0,
                         "Toggle Reminder": 1,
-                        "Force All Staff Off Duty": 2,
+                        "Force All Staff Off Shift": 2,
                         "Send ER:LC Command": 3,
                         "Send ER:LC Message": 4,
                         "Send ER:LC Hint": 5,
@@ -4161,7 +3961,7 @@ class ActionCreationToolkit(discord.ui.View):
                     "IntegrationID": {
                         "Execute Custom Command": 0,
                         "Toggle Reminder": 1,
-                        "Force All Staff Off Duty": 2,
+                        "Force All Staff Off Shift": 2,
                         "Send ER:LC Command": 3,
                         "Send ER:LC Message": 4,
                         "Send ER:LC Hint": 5,
@@ -4337,11 +4137,11 @@ class RequestGoogleSpreadsheet(discord.ui.View):
 #         command: discord.ext.commands.HybridCommand = None,
 #         extra_args: dict = None,
 #         concatenate_to_last_argument: bool = False,
-#         flag_class: discord.ext.commands.FlagConverter = DutyManageOptions,
+#         flag_class: discord.ext.commands.FlagConverter = ShiftManageOptions,
 #     ):
 #         if command is None:
 #             # assume default
-#             command = self.bot.get_command("duty manage")
+#             command = self.bot.get_command("shift manage")
 #         mockinteraction = copy(interaction)
 #         mockinteraction._cs_command = command
 #         mockinteraction.user = self.context.author
@@ -4383,13 +4183,13 @@ class RequestGoogleSpreadsheet(discord.ui.View):
 #             )
 #
 #     @discord.ui.button(
-#         label="On Duty", style=discord.ButtonStyle.green, custom_id="on_duty-execution"
+#         label="On Shift", style=discord.ButtonStyle.green, custom_id="on_shift-execution"
 #     )
-#     async def on_duty(
+#     async def on_shift(
 #         self, interaction: discord.Interaction, button: discord.ui.Button
 #     ):
 #         await self.execute_command(
-#             interaction, "/onduty=True /without_command_execution=True"
+#             interaction, "/onshift=True /without_command_execution=True"
 #         )
 #
 #     @discord.ui.button(
@@ -4405,15 +4205,15 @@ class RequestGoogleSpreadsheet(discord.ui.View):
 #         )
 #
 #     @discord.ui.button(
-#         label="Off Duty",
+#         label="Off Shift",
 #         style=discord.ButtonStyle.danger,
-#         custom_id="off_duty-execution",
+#         custom_id="off_shift-execution",
 #     )
-#     async def off_duty(
+#     async def off_shift(
 #         self, interaction: discord.Interaction, button: discord.ui.Button
 #     ):
 #         await self.execute_command(
-#             interaction, "/offduty=True /without_command_execution=True"
+#             interaction, "/offshift=True /without_command_execution=True"
 #         )
 #
 #     @discord.ui.button(
@@ -5967,7 +5767,7 @@ class ExtendedShiftOptions(discord.ui.View):
                     "nickname_prefix",
                     discord.ui.TextInput(
                         label="Nickname Prefix",
-                        placeholder="The nickname prefix that will be used when someone goes On-Duty.",
+                        placeholder="The nickname prefix that will be used when someone goes On-Shift.",
                         default=str(self.nickname_default),
                         required=False,
                     ),
@@ -6043,7 +5843,7 @@ class ShiftConfiguration(AssociationConfigurationView):
 
     @discord.ui.select(
         cls=discord.ui.RoleSelect,
-        placeholder="On-Duty Role",
+        placeholder="On-Shift Role",
         row=2,
         max_values=25,
         min_values=0,
@@ -6066,7 +5866,7 @@ class ShiftConfiguration(AssociationConfigurationView):
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title="Security Concern",
-                    description="You cannot choose an On-Duty role that is higher than your maximum role.",
+                    description="You cannot choose an On-Shift role that is higher than your maximum role.",
                     color=BLANK_COLOR,
                 ),
                 ephemeral=True,
@@ -6088,7 +5888,7 @@ class ShiftConfiguration(AssociationConfigurationView):
             bot,
             interaction.guild,
             interaction.user,
-            f"On-Duty Role has been set to {', '.join([f'<@&{i.id}>' for i in select.values])}.",
+            f"On-Shift Role has been set to {', '.join([f'<@&{i.id}>' for i in select.values])}.",
         )
 
     @discord.ui.select(
@@ -6208,7 +6008,7 @@ class ShiftConfiguration(AssociationConfigurationView):
                     f"> **Channel:** <#{item['channel']}>\n"
                     f"> **Nickname Prefix:** {item.get('nickname') or 'None'}\n"
                     f"> **Access Roles:** {','.join(['<@&{}>'.format(role) for role in item.get('access_roles') or []]) or 'None'}\n"
-                    f"> **On-Duty Role:** {','.join(['<@&{}>'.format(role) for role in item.get('role', [])]) or 'None'}"
+                    f"> **On-Shift Role:** {','.join(['<@&{}>'.format(role) for role in item.get('role', [])]) or 'None'}"
                 ),
                 inline=False,
             )
@@ -6256,10 +6056,10 @@ class ShiftConfiguration(AssociationConfigurationView):
                     f"> **ID:** {data['id']}\n"
                     f"> **Shift Channel:** {'<#{}>'.format(data.get('channel', None)) if data.get('channel', None) is not None else 'Not set'}\n"
                     f"> **Nickname Prefix:** {data.get('nickname') or 'None'}\n"
-                    f"> **On-Duty Roles:** {', '.join(['<@&{}>'.format(r) for r in data.get('role', [])]) or 'Not set'}\n"
+                    f"> **On-Shift Roles:** {', '.join(['<@&{}>'.format(r) for r in data.get('role', [])]) or 'Not set'}\n"
                     f"> **Break Roles:** {', '.join(['<@&{}>'.format(r) for r in data.get('break_roles', [])]) or 'Not set'}\n"
                     f"> **Access Roles:** {', '.join(['<@&{}>'.format(r) for r in data.get('access_roles', [])]) or 'Not set'}\n\n\n"
-                    f"Access Roles are roles that are able to freely use this Shift Type and are able to go on-duty as this Shift Type. If an access role is selected, an individual must have it to go on-duty with this Shift Type."
+                    f"Access Roles are roles that are able to freely use this Shift Type and are able to go on-shift as this Shift Type. If an access role is selected, an individual must have it to go on-shift with this Shift Type."
                 ),
                 color=BLANK_COLOR,
             )
@@ -6308,7 +6108,7 @@ class ShiftConfiguration(AssociationConfigurationView):
                 data,
                 "edit",
                 {
-                    "On-Duty Roles": roles,
+                    "On-Shift Roles": roles,
                     "Break Roles": break_roles,
                     "Access Roles": access_roles,
                     "Shift Channel": shift_channel,
@@ -6358,9 +6158,9 @@ class ShiftConfiguration(AssociationConfigurationView):
                     f"> **ID:** {data['id']}\n"
                     f"> **Shift Channel:** {'<#{}>'.format(data.get('channel', None)) if data.get('channel', None) is not None else 'Not set'}\n"
                     f"> **Nickname Prefix:** {data.get('nickname') or 'None'}\n"
-                    f"> **On-Duty Roles:** {', '.join(['<@&{}>'.format(r) for r in data.get('role', [])]) or 'Not set'}\n"
+                    f"> **On-Shift Roles:** {', '.join(['<@&{}>'.format(r) for r in data.get('role', [])]) or 'Not set'}\n"
                     f"> **Access Roles:** {', '.join(['<@&{}>'.format(r) for r in data.get('access_roles', [])]) or 'Not set'}\n\n\n"
-                    f"Access Roles are roles that are able to freely use this Shift Type and are able to go on-duty as this Shift Type. If an access role is selected, an individual must have it to go on-duty with this Shift Type."
+                    f"Access Roles are roles that are able to freely use this Shift Type and are able to go on-shift as this Shift Type. If an access role is selected, an individual must have it to go on-shift with this Shift Type."
                 ),
                 color=BLANK_COLOR,
             )
@@ -6602,7 +6402,7 @@ class ERMCommandLog(AssociationConfigurationView):
 
     @discord.ui.select(
         cls=discord.ui.ChannelSelect,
-        placeholder="ERM Log Channel",
+        placeholder="ERM CE Log Channel",
         row=0,
         max_values=1,
         min_values=0,
@@ -9043,8 +8843,8 @@ class MoreERLCConfiguration(discord.ui.View):
             name=interaction.guild.name,
             icon_url=interaction.guild.icon.url if interaction.guild.icon else "",
         )
-        embed.description += "\n\n**Server Moderator Roles:** When these roles go on-duty, they will be given the Server Moderator permission in-game. When they go off-duty, the permissions they were given will be removed. This means that moderators only have staff permissions when they are on-duty, and they don't have access to commands when they are roleplaying."
-        embed.description += "\n\n**Server Administrator Roles:** When these roles go on-duty, they will be given the Server Administrator permission in-game. When they go off-duty, the permissions they were given will be removed. This means that administrators only have staff permissions when they are on-duty, and they don't have access to commands when they are roleplaying."
+        embed.description += "\n\n**Server Moderator Roles:** When these roles go on-shift, they will be given the Server Moderator permission in-game. When they go off-shift, the permissions they were given will be removed. This means that moderators only have staff permissions when they are on-shift, and they don't have access to commands when they are roleplaying."
+        embed.description += "\n\n**Server Administrator Roles:** When these roles go on-shift, they will be given the Server Administrator permission in-game. When they go off-shift, the permissions they were given will be removed. This means that administrators only have staff permissions when they are on-shift, and they don't have access to commands when they are roleplaying."
 
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
@@ -9420,7 +9220,7 @@ class ERLCStats(discord.ui.View):
                     "`{server}` - Name of the server this is being ran in.\n"
                     "`{channel}` - Mention of the channel the command is being ran in.\n"
                     "`{prefix}` - The custom prefix of the bot.\n"
-                    "`{onduty}` - Number of staff which are on duty within your server.\n"
+                    "`{onshift}` - Number of staff which are on shift within your server.\n"
                     "\n**PRC Specific Variables**\n"
                     "`{join_code}` - Join Code of the ERLC server\n"
                     "`{players}` - Current players in the ERLC server\n"
@@ -9473,7 +9273,7 @@ class CreateERLCStats(discord.ui.View):
                         "format",
                         discord.ui.TextInput(
                             label="Format",
-                            placeholder=f"Format With Variables {', '.join([f'`{i}`' for i in ['onduty', 'join_code', 'players', 'etc']])}",
+                            placeholder=f"Format With Variables {', '.join([f'`{i}`' for i in ['onshift', 'join_code', 'players', 'etc']])}",
                         ),
                     )
                 ],
@@ -9565,7 +9365,7 @@ class EditERLCStats(discord.ui.View):
                         "format",
                         discord.ui.TextInput(
                             label="Format",
-                            placeholder=f"Format With Variables {', '.join([f'`{i}`' for i in ['onduty', 'join_code', 'players', 'etc']])}",
+                            placeholder=f"Format With Variables {', '.join([f'`{i}`' for i in ['onshift', 'join_code', 'players', 'etc']])}",
                         ),
                     )
                 ],
@@ -10117,10 +9917,10 @@ class ShiftTypeCreator(discord.ui.View):
                 f"> **ID:** {self.dataset['id']}\n"
                 f"> **Shift Channel:** {'<#{}>'.format(self.dataset.get('channel', None)) if self.dataset.get('channel', None) is not None else 'Not set'}\n"
                 f"> **Nickname Prefix:** {self.dataset.get('nickname') or 'Not set'}\n"
-                f"> **On-Duty Roles:** {', '.join(['<@&{}>'.format(r) for r in self.dataset.get('role', [])]) or 'Not set'}\n"
+                f"> **On-Shift Roles:** {', '.join(['<@&{}>'.format(r) for r in self.dataset.get('role', [])]) or 'Not set'}\n"
                 f"> **Break Roles:** {', '.join(['<@&{}>'.format(r) for r in self.dataset.get('break_roles', [])]) or 'Not set'}\n"
                 f"> **Access Roles:** {', '.join(['<@&{}>'.format(r) for r in self.dataset.get('access_roles', [])]) or 'Not set'}\n\n\n"
-                f"Access Roles are roles that are able to freely use this Shift Type and are able to go on-duty as this Shift Type. If an access role is selected, an individual must have it to go on-duty with this Shift Type."
+                f"Access Roles are roles that are able to freely use this Shift Type and are able to go on-Shift as this Shift Type. If an access role is selected, an individual must have it to go on-shift with this Shift Type."
             ),
             color=BLANK_COLOR,
         )
@@ -10139,9 +9939,9 @@ class ShiftTypeCreator(discord.ui.View):
         await message.edit(embed=embed, view=self)
 
     @discord.ui.select(
-        cls=discord.ui.RoleSelect, placeholder="On-Duty Roles", row=0, max_values=25
-    )  # changed to On-Duty Role for parity with the other select
-    async def on_duty_roles(
+        cls=discord.ui.RoleSelect, placeholder="On-Shift Roles", row=0, max_values=25
+    )  # changed to On-Shift Role for parity with the other select
+    async def on_shift_roles(
         self, interaction: discord.Interaction, select: discord.ui.RoleSelect
     ):
         # secvuln: prevention
@@ -10155,7 +9955,7 @@ class ShiftTypeCreator(discord.ui.View):
             await interaction.response.send_message(
                 embed=discord.Embed(
                     title="Security Concern",
-                    description="You cannot choose an On-Duty Role that is higher than your maximum role.",
+                    description="You cannot choose an On-Shift Role that is higher than your maximum role.",
                     color=BLANK_COLOR,
                 ),
                 ephemeral=True,
@@ -10186,7 +9986,7 @@ class ShiftTypeCreator(discord.ui.View):
         row=1,
         min_values=0,
         max_values=25,
-    )  # changed to On-Duty Role for parity with the other select
+    )  # changed to On-Shift Role for parity with the other select
     async def break_roles(
         self, interaction: discord.Interaction, select: discord.ui.RoleSelect
     ):
@@ -10564,11 +10364,11 @@ class ShiftMenu(discord.ui.View):
 
     def check_buttons(self, option: typing.Literal["on", "break", "off"]):
         if option == "on":
-            buttons = ["Toggle Break", "Off-Duty"]
+            buttons = ["Toggle Break", "Off-Shift"]
         elif option == "break":
-            buttons = ["On-Duty", "Off-Duty"]
+            buttons = ["On-Shift", "Off-Shift"]
         else:
-            buttons = ["On-Duty"]
+            buttons = ["On-Shift"]
 
         for item in self.children:
             if item.label not in buttons:
@@ -10638,7 +10438,7 @@ class ShiftMenu(discord.ui.View):
                 inline=False,
             ),
             "off": discord.Embed(
-                title=f"{self.bot.emoji_controller.get_emoji('ShiftEnded')} **Off-Duty**",
+                title=f"{self.bot.emoji_controller.get_emoji('ShiftEnded')} **Off-Shift**",
                 color=RED_COLOR,
             )
             .set_author(
@@ -10709,8 +10509,8 @@ class ShiftMenu(discord.ui.View):
 
             return await self.message.edit(view=self)
 
-    @discord.ui.button(label="On-Duty", style=discord.ButtonStyle.green)
-    async def on_duty_button(self, interaction: discord.Interaction, _: discord.Button):
+    @discord.ui.button(label="On-Shift", style=discord.ButtonStyle.green)
+    async def on_shift_button(self, interaction: discord.Interaction, _: discord.Button):
         await interaction.response.defer(thinking=False)
         if self.state == "break":
             self.shift["Breaks"][-1]["EndEpoch"] = datetime.datetime.now(
@@ -10742,7 +10542,7 @@ class ShiftMenu(discord.ui.View):
             return await interaction.response.send_message(
                 embed=discord.Embed(
                     title="No Access",
-                    description="You are not permitted to go on-duty as this Shift Type.",
+                    description="You are not permitted to go on-shift as this Shift Type.",
                     color=blank_color,
                 ),
                 ephemeral=True,
@@ -10782,8 +10582,8 @@ class ShiftMenu(discord.ui.View):
         self.bot.dispatch("break_start", self.contained_document.id)
         return
 
-    @discord.ui.button(label="Off-Duty", style=discord.ButtonStyle.red)
-    async def off_duty_button(
+    @discord.ui.button(label="Off-Shift", style=discord.ButtonStyle.red)
+    async def off_shift_button(
         self, interaction: discord.Interaction, _: discord.Button
     ):
         await interaction.response.defer(thinking=False)
@@ -10829,11 +10629,11 @@ class AdministratedShiftMenu(discord.ui.View):
 
     def check_buttons(self, option: typing.Literal["on", "break", "off"]):
         if option == "on":
-            buttons = ["Toggle Break", "Off-Duty", "Other Options"]
+            buttons = ["Toggle Break", "Off-Shift", "Other Options"]
         elif option == "break":
-            buttons = ["On-Duty", "Off-Duty", "Other Options"]
+            buttons = ["On-Shift", "Off-Shift", "Other Options"]
         else:
-            buttons = ["On-Duty", "Other Options"]
+            buttons = ["On-Shift", "Other Options"]
 
         for item in self.children:
             if isinstance(item, discord.ui.Button):
@@ -10877,7 +10677,7 @@ class AdministratedShiftMenu(discord.ui.View):
         if option == "void":
             selected_ui = (
                 discord.Embed(
-                    title=f"{self.bot.emoji_controller.get_emoji('ShiftEnded')} **Off-Duty**",
+                    title=f"{self.bot.emoji_controller.get_emoji('ShiftEnded')} **Off-Shift**",
                     color=RED_COLOR,
                 )
                 .set_author(
@@ -10925,7 +10725,7 @@ class AdministratedShiftMenu(discord.ui.View):
                     inline=False,
                 ),
                 "off": discord.Embed(
-                    title=f"{self.bot.emoji_controller.get_emoji('ShiftEnded')} **Off-Duty**",
+                    title=f"{self.bot.emoji_controller.get_emoji('ShiftEnded')} **Off-Shift**",
                     color=RED_COLOR,
                 )
                 .set_author(
@@ -11037,8 +10837,8 @@ class AdministratedShiftMenu(discord.ui.View):
         self.contained_document = None
         self.shift = None
 
-    @discord.ui.button(label="On-Duty", style=discord.ButtonStyle.green)
-    async def on_duty_button(self, interaction: discord.Interaction, _: discord.Button):
+    @discord.ui.button(label="On-Shift", style=discord.ButtonStyle.green)
+    async def on_shift_button(self, interaction: discord.Interaction, _: discord.Button):
         await interaction.response.defer(thinking=False)
         if self.state == "break":
             self.shift["Breaks"][-1]["EndEpoch"] = datetime.datetime.now(
@@ -11087,8 +10887,8 @@ class AdministratedShiftMenu(discord.ui.View):
         self.bot.dispatch("break_start", self.contained_document.id)
         return
 
-    @discord.ui.button(label="Off-Duty", style=discord.ButtonStyle.red)
-    async def off_duty_button(
+    @discord.ui.button(label="Off-Shift", style=discord.ButtonStyle.red)
+    async def off_shift_button(
         self, interaction: discord.Interaction, _: discord.Button
     ):
         await interaction.response.defer(thinking=False)

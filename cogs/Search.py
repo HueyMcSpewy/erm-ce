@@ -261,10 +261,10 @@ class Search(commands.Cog):
 
     @commands.guild_only()
     @commands.hybrid_command(
-        name="search",
-        aliases=["s"],
+        name="lookup",
+        aliases=["look"],
         description="Searches for a user in the warning database.",
-        extras={"category": "Search"},
+        extras={"category": "Lookup"},
         usage="<user>",
         with_app_command=True,
     )
@@ -537,4 +537,6 @@ class Search(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Search(bot))
+
+
 
