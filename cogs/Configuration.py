@@ -1222,15 +1222,6 @@ class Configuration(commands.Cog):
 
         await ctx.send(embed=embeds[0], view=paginator.get_current_view())
 
-# TODO - Get all the data from database of the guild
-#    @commands.guild_only()
-#    @server.command(
-#        name="data export",
-#        description="Export the data for your server!",
-#        extras={"category": "Configuration"},
-#    )
-#    @is_management()
-    
 async def setup(bot):
     await bot.add_cog(Configuration(bot))
 

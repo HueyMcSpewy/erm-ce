@@ -190,11 +190,21 @@ class Utility(commands.Cog):
             icon_url=self.bot.user.display_avatar.url,
         )
         await ctx.reply(embed=embed)
+# TODO - Get all the data from database of the guild
+#    @commands.guild_only()
+#    @server.command(
+#        name="data export",
+#        description="Export the data for your server!",
+#        extras={"category": "Configuration"},
+#    )
+#    @is_management()
 
-    @commands.hybrid_group(name="api")
-    async def api(self, ctx):
-        pass
 
+
+#    @commands.hybrid_group(name="api")
+#    async def api(self, ctx):
+#        pass
+#
 #    @commands.guild_only()
 #    @api.command(
 #        name="generate",

@@ -670,7 +670,7 @@ class ServerCountStatus(commands.Cog):
         self.bot = bot
         self.update_status.start()
 
-    @tasks.loop(minutes=5)  # updates every 5 minutes (you can change it)
+    @tasks.loop(minutes=5)
     async def update_status(self):
         await self.bot.wait_until_ready()
         guild_count = len(self.bot.guilds)

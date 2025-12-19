@@ -42,14 +42,14 @@ class ShiftLogging(commands.Cog):
         self.bot = bot
 
     @commands.hybrid_group(
-        name="duty"
+        name="shift"
     ) # hey, maybe dont delete this next time noagonzales.
-    async def duty(self, ctx):
+    async def shift(self, ctx):
         pass
     
 
     @commands.guild_only()
-    @duty.command(
+    @shift.command(
         name="time",
         description="Allows you to check your shift time, as well as past data.",
         extras={"category": "Shift Management"},
@@ -59,7 +59,7 @@ class ShiftLogging(commands.Cog):
     @require_settings()
     @app_commands.describe(member = "The staff member to view shifts for.", shift_type="The type of shift to view.")
     @app_commands.autocomplete(shift_type=shift_type_autocomplete)
-    async def duty_time(self, ctx, member: typing.Optional[discord.Member] = None, shift_type: str = "Default"):
+    async def shift_time(self, ctx, member: typing.Optional[discord.Member] = None, shift_type: str = "Default"):
         if isinstance(member, str) and not shift_type:
             shift_type = member
             member = None
@@ -162,7 +162,7 @@ class ShiftLogging(commands.Cog):
         else:
             await ctx.reply(embed=embed)
 
-    @duty.command(
+    @shift.command(
         name="admin",
         description="Allows for you to administrate someone else's shift",
         extras={"category": "Shift Management"},
@@ -170,7 +170,7 @@ class ShiftLogging(commands.Cog):
     @require_settings()
     @is_admin()
     @app_commands.autocomplete(type=shift_type_autocomplete)
-    async def duty_admin(
+    async def shift_admin(
         self, ctx, member: discord.Member, type: str = "Default", force: str = "false"
     ):
         if self.bot.shift_management_disabled is True:
@@ -256,7 +256,7 @@ class ShiftLogging(commands.Cog):
 
         shift = await self.bot.shift_management.get_current_shift(member, ctx.guild.id)
         await log_command_usage(
-            self.bot, ctx.guild, ctx.author, f"Duty Admin for {member.name}"
+            self.bot, ctx.guild, ctx.author, f"Shift Admin for {member.name}"
         )
         previous_shifts = [
             i
@@ -305,7 +305,7 @@ class ShiftLogging(commands.Cog):
                 inline=False,
             )
             embed.title = (
-                f"{self.bot.emoji_controller.get_emoji('ShiftStarted')} **On-Duty**"
+                f"{self.bot.emoji_controller.get_emoji('ShiftStarted')} **On-Shift**"
             )
         elif status == "break":
             contained_document: ShiftItem = await self.bot.shift_management.fetch_shift(
@@ -342,7 +342,7 @@ class ShiftLogging(commands.Cog):
         else:
             embed.colour = RED_COLOR
             embed.title = (
-                f"{self.bot.emoji_controller.get_emoji('ShiftEnded')} **Off-Duty**"
+                f"{self.bot.emoji_controller.get_emoji('ShiftEnded')} **Off-Shift**"
             )
         try:
             view = AdministratedShiftMenu(
@@ -372,7 +372,7 @@ class ShiftLogging(commands.Cog):
             view.message = msg
 
     @commands.guild_only()
-    @duty.command(
+    @shift.command(
         name="manage",
         description="Manage your own shift in an easy way!",
         extras={"category": "Shift Management"},
@@ -380,7 +380,7 @@ class ShiftLogging(commands.Cog):
     @is_staff()
     @require_settings()
     @app_commands.autocomplete(type=shift_type_autocomplete)
-    async def duty_manage(self, ctx, *, type: str = "Default"):
+    async def shift_manage(self, ctx, *, type: str = "Default"):
         settings = await self.bot.settings.find_by_id(ctx.guild.id)
         if not settings.get("shift_management", {}).get("enabled", False):
             return await ctx.send(
@@ -470,14 +470,14 @@ class ShiftLogging(commands.Cog):
             return
 
         try:
-            on_duty_staff = await self.bot.shift_management.shifts.db.count_documents(
+            on_shift_staff = await self.bot.shift_management.shifts.db.count_documents(
                 {"Guild": ctx.guild.id, "EndEpoch": 0}
             )
-            # print(f"Staff on Duty: {on_duty_staff}")
+            # print(f"Staff on Shift: {on_shift_staff}")
         except AttributeError:
             # print("Attribute Error")
             return
-        # if author is on duty then bypass the limit
+        # if author is on shift then bypass the limit
         shift_zero = [
             i
             async for i in self.bot.shift_management.shifts.db.find(
@@ -486,11 +486,11 @@ class ShiftLogging(commands.Cog):
         ]
 
         if len(shift_zero) == 0:
-            if (on_duty_staff) >= (maximum_staff or 0) and (maximum_staff or 0) != 0:
+            if (on_shift_staff) >= (maximum_staff or 0) and (maximum_staff or 0) != 0:
                 return await ctx.send(
                     embed=discord.Embed(
                         title="Staff Limit Reached",
-                        description="The maximum amount of staff members on duty has been reached.",
+                        description="The maximum amount of staff members on shift has been reached.",
                         color=BLANK_COLOR,
                     )
                 )
@@ -546,7 +546,7 @@ class ShiftLogging(commands.Cog):
                 inline=False,
             )
             embed.title = (
-                f"{self.bot.emoji_controller.get_emoji('ShiftStarted')} **On-Duty**"
+                f"{self.bot.emoji_controller.get_emoji('ShiftStarted')} **On-Shift**"
             )
         elif status == "break":
             print("On Break status called")
@@ -590,7 +590,7 @@ class ShiftLogging(commands.Cog):
         else:
             embed.colour = RED_COLOR
             embed.title = (
-                f"{self.bot.emoji_controller.get_emoji('ShiftEnded')} **Off-Duty**"
+                f"{self.bot.emoji_controller.get_emoji('ShiftEnded')} **Off-Shift**"
             )
 
         view = ShiftMenu(
@@ -608,7 +608,7 @@ class ShiftLogging(commands.Cog):
             await msg.edit(embed=embed, view=view)
             view.message = msg
 
-    @duty.command(
+    @shift.command(
         name="active",
         description="Get all members of the server currently on shift.",
         extras={"category": "Shift Management"},
@@ -616,7 +616,7 @@ class ShiftLogging(commands.Cog):
     @require_settings()
     @app_commands.autocomplete(type=all_shift_type_autocomplete)
     @is_staff()
-    async def duty_active(self, ctx: commands.Context, *, type: str = None):
+    async def shift_active(self, ctx: commands.Context, *, type: str = None):
         if self.bot.shift_management_disabled is True:
             return await new_failure_embed(
                 ctx,
@@ -829,7 +829,7 @@ class ShiftLogging(commands.Cog):
             await ctx.reply(embed=embeds[0], view=paginator.get_current_view())
 
     @commands.guild_only()
-    @duty.command(
+    @shift.command(
         name="leaderboard",
         description="Get the total time worked for the whole of the staff team.",
         extras={"category": "Shift Management"},
@@ -1266,7 +1266,7 @@ class ShiftLogging(commands.Cog):
                     credentials_dict,
                     scope,
                     combined,
-                    config("DUTY_LEADERBOARD_ID"),
+                    config("SHIFT_LEADERBOARD_ID"),
                     total_seconds,
                 )
             else:
@@ -1284,7 +1284,7 @@ class ShiftLogging(commands.Cog):
                     credentials_dict,
                     scope,
                     combined,
-                    config("DUTY_LEADERBOARD_ID"),
+                    config("SHIFT_LEADERBOARD_ID"),
                     total_seconds,
                 )
             else:
@@ -1328,7 +1328,7 @@ class ShiftLogging(commands.Cog):
                 menu.message = await ctx.reply(embed=embeds[0], view=view_page)
 
     @commands.guild_only()
-    @duty.command(
+    @shift.command(
         name="history",
         description="Show all past shifts of user by shift type",
         extras={"category": "Shift Management"},
@@ -1337,7 +1337,7 @@ class ShiftLogging(commands.Cog):
     @require_settings()
     @app_commands.autocomplete(type=shift_type_autocomplete)
     @is_management()
-    async def duty_shifts(
+    async def shift_shifts(
         self, ctx: commands.Context, user: discord.User, type: str = "Default"
     ):
         if self.bot.shift_management_disabled is True:
