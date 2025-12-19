@@ -203,13 +203,6 @@ async def iterate_conditions(bot):
             except Exception as e:
                 logging.warning(f"Failed to initialise execution of condition: {e}")
 
-    actions = [
-        i
-        async for i in bot.actions.db.find(
-            {"Conditions": {"$exists": True, "$ne": []}}
-        )
-    ]
-    
     batch_size = 10
     for i in range(0, len(actions), batch_size):
         batch = actions[i:i + batch_size]
