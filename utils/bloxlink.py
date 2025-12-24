@@ -22,7 +22,8 @@ class Bloxlink:
             return {"robloxID": doc["roblox_id"]}
 
         response, resp_json = await self._send_request(
-            "GET", f"https://api.blox.link/v4/public/discord-to-roblox/{user_id}"
+#            "GET", f"https://api.blox.link/v4/public/discord-to-roblox/{user_id}"
+            "GET", f"https://api.blox.link/v4/public/guilds/1403328821121388674/discord-to-roblox/{user_id}" # temp addition so we can use bloxlink with out global key
         )
 
         if resp_json.get("error"):
