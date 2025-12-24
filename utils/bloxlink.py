@@ -39,7 +39,7 @@ class Bloxlink:
 
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                "https://users.roblox.com/v1/users/"
+                "https://users.roblox.com/v1/users/",
                 json=payload
             ) as resp:
                 return await resp.json()
