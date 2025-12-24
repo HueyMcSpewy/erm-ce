@@ -35,8 +35,11 @@ class Bloxlink:
         if not user_id:
             return {}
 
+        payload = {"userIds": [{user_id}],"excludeBannedUsers": True}
+
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                "https://users.roblox.com/v1/users/{}".format(user_id)
+                "https://users.roblox.com/v1/users/"
+                json=payload
             ) as resp:
                 return await resp.json()
