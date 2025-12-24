@@ -36,6 +36,7 @@ class Bloxlink:
             return {}
 
         payload = {"userIds": [{user_id}],"excludeBannedUsers": True}
+        headers = {"accept": "application/json", "Content-Type": "application/json"}
 
         async with aiohttp.ClientSession() as session:
             async with session.get(
