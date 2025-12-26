@@ -22,8 +22,7 @@ class Bloxlink:
             return {"robloxID": doc["roblox_id"]}
 
         response, resp_json = await self._send_request(
-#            "GET", f"https://api.blox.link/v4/public/discord-to-roblox/{user_id}"
-            "GET", f"https://api.blox.link/v4/public/guilds/1403328821121388674/discord-to-roblox/{user_id}" # temp addition so we can use bloxlink with out global key
+            "GET", f"https://api.blox.link/v4/public/discord-to-roblox/{user_id}"
         )
 
         if resp_json.get("error"):
@@ -35,11 +34,8 @@ class Bloxlink:
         if not user_id:
             return {}
 
-        payload = {"userIds": [{user_id}]}
-
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                "https://users.roblox.com/v1/users/",
-                json=payload
+                "https://users.roblox.com/v1/users/{}".format(user_id)
             ) as resp:
                 return await resp.json()
