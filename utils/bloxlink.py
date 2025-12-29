@@ -26,6 +26,7 @@ class Bloxlink:
         )
 
         if resp_json.get("error"):
+            print(f"error here {resp_json}")
             return {}
         else:
             return resp_json
