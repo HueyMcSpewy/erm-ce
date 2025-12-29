@@ -103,21 +103,24 @@ async def get_roblox_by_username(user: str, bot, ctx: commands.Context):
             )
             if member_converted:
                 bl_user_data = await bot.bloxlink.find_roblox(member_converted.id)
-                # print(bl_user_data)
-                roblox_user = await bot.bloxlink.get_roblox_info(
+                if not bl_user_data or "robloxID" not in bl_user_data:
+                    return {"errors": ["User has no Roblox account linked"]}
+
+                return await bot.bloxlink.get_roblox_info(
                     bl_user_data["robloxID"]
                 )
-                return roblox_user
-        except KeyError:
+        except (KeyError, commands.MemberNotFound, commands.BadArgument):
             return {"errors": ["Member could not be found in Discord."]}
 
-    client = roblox.Client()
-    roblox_user = await client.get_user_by_username(user)
+    try:
+        roblox_user = await bot.roblox_client.get_user_by_username(user)
+    except Exception:
+        return {"errors": ["Roblox API error (connection failed)"]}
+
     if not roblox_user:
         return {"errors": ["Could not find user"]}
-    else:
-        return await bot.bloxlink.get_roblox_info(roblox_user.id)
 
+    return await bot.bloxlink.get_roblox_info(roblox_user.id)
 
 async def staff_check(bot_obj, guild, member):
     guild_settings = await bot_obj.settings.find_by_id(guild.id)
@@ -609,16 +612,15 @@ async def fetch_get_channel(target, identifier):
 async def get_discord_by_roblox(bot, username):
     api_url = "https://users.roblox.com/v1/usernames/users"
     payload = {"usernames": [username], "excludeBannedUsers": True}
-    response = requests.post(api_url, json=payload)
-    if response.status_code == 200:
-        data = response.json()["data"][0]
-        id = data["id"]
-        linked_account = await bot.oauth2_users.db.find_one({"roblox_id": id})
-        if linked_account:
-            return linked_account["discord_id"]
-        else:
-            return None
 
+    async with aiohttp.ClientSession() as session:
+        async with session.post(api_url, json=payload) as response:
+            if response.status != 200:
+                return None
+            data = (await response.json())["data"][0]
+
+    linked_account = await bot.oauth2_users.db.find_one({"roblox_id": data["id"]})
+    return linked_account["discord_id"] if linked_account else None
 
 async def log_command_usage(bot, guild, member, command_name):
     settings = await bot.settings.find_by_id(guild.id)
