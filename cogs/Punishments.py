@@ -1063,4 +1063,3 @@ class Punishments(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(Punishments(bot))
-

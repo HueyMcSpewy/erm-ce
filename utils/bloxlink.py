@@ -1,4 +1,5 @@
 import discord
+import logging
 from discord.ext import commands
 import aiohttp
 
@@ -22,11 +23,10 @@ class Bloxlink:
             return {"robloxID": doc["roblox_id"]}
 
         response, resp_json = await self._send_request(
-            "GET", f"https://api.blox.link/v4/public/discord-to-roblox/{user_id}"
+            "GET", f"https://api.blox.link/v4/public/guilds/1403328821121388674/discord-to-roblox/{user_id}"
         )
 
         if resp_json.get("error"):
-            print(f"error here {resp_json}")
             return {}
         else:
             return resp_json
@@ -34,9 +34,28 @@ class Bloxlink:
     async def get_roblox_info(self, user_id: int):
         if not user_id:
             return {}
+        if isinstance(user_id, int): 
+                url = "https://users.roblox.com/v1/users/{}" .format (userid)
+                async with self.session.get(url) as resp:
+                    return await resp.json()
+        else: # So if it is a username it does not break             
+            payload = {
+                "usernames": [user_id]
+            }
+            async with self.session.post(
+                    "https://users.roblox.com/v1/usernames/users",
+                    json=payload
+                ) as response:
+                    data = await response.json()
+            user_list = data.get("data",[])
+            if user_list:
+                userid =  user_list[0].get("id")
+            else:
+                userid = None
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                "https://users.roblox.com/v1/users/{}".format(user_id)
-            ) as resp:
-                return await resp.json()
+                url = "https://users.roblox.com/v1/users/{}" .format (userid)
+                async with self.session.get(url) as resp:
+                    return await resp.json()          
+        # some how this jank code works
+
+

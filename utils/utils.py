@@ -16,7 +16,6 @@ from discord.ext import commands
 from fuzzywuzzy import fuzz
 from snowflake import SnowflakeGenerator
 from zuid import ZUID
-
 import utils.prc_api as prc_api
 from utils.constants import BLANK_COLOR, RED_COLOR
 from utils.prc_api import ServerStatus, Player
@@ -37,7 +36,7 @@ tokenGenerator = ZUID(
 
 generator = SnowflakeGenerator(192)
 error_gen = ZUID(prefix="error_", length=10)
-system_code_gen = ZUID(prefix="erm-systems-", length=7)
+system_code_gen = ZUID(prefix="why-are-you-here-plz-go-away-erm-ce", length=7)
 
 
 def removesuffix(input_string: str, suffix: str):
@@ -98,29 +97,29 @@ async def has_whitelabel(bot, guild_id: int) -> bool:
 async def get_roblox_by_username(user: str, bot, ctx: commands.Context):
     if "<@" in user:
         try:
-            member_converted = await discord.ext.commands.MemberConverter().convert(
-                ctx, user
-            )
+            member_converted = await discord.ext.commands.MemberConverter().convert(ctx, user)
             if member_converted:
-                bl_user_data = await bot.bloxlink.find_roblox(member_converted.id)
+                bl_user_data = await ctx.bot.bloxlink.find_user(member_converted.id)
                 if not bl_user_data or "robloxID" not in bl_user_data:
                     return {"errors": ["User has no Roblox account linked"]}
-
-                return await bot.bloxlink.get_roblox_info(
-                    bl_user_data["robloxID"]
-                )
-        except (KeyError, commands.MemberNotFound, commands.BadArgument):
-            return {"errors": ["Member could not be found in Discord."]}
-
+#                logging.info(bl_user_data)
+                roblox_info = ctx.bot.bloxlink.get_roblox_info(bl_user_data["robloxID"])
+                return roblox_info
+        except (KeyError, commands.MemberNotFound, commands.BadArgument):          
+            return {"errors": ["Member could not be found in Discord."]}                      
+        
     try:
-        roblox_user = await bot.roblox_client.get_user_by_username(user)
-    except Exception:
-        return {"errors": ["Roblox API error (connection failed)"]}
+        roblox_user = await ctx.bot.bloxlink.get_roblox_info(user)
+    except Exception as e:
+        logging.exception("Failed to fetch Roblox user (internal error) see Traceback for more infomation")
+        return {}
 
     if not roblox_user:
+        logging.error("COULD NOT FIND USER!")
         return {"errors": ["Could not find user"]}
-
-    return await bot.bloxlink.get_roblox_info(roblox_user.id)
+    
+    print(roblox_user)
+    return roblox_user
 
 async def staff_check(bot_obj, guild, member):
     guild_settings = await bot_obj.settings.find_by_id(guild.id)
