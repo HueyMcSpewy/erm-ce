@@ -7,15 +7,34 @@ import aiohttp
 class Bloxlink:
     def __init__(self, bot: commands.Bot, key: str):
         self.api_key = key
+        timeout = aiohttp.ClientTimeout(total=10)
         self.session = aiohttp.ClientSession()
+        self.semaphore = asyncio.Semaphore(10)
         bot.external_http_sessions.append(self.session)
         self.bot = bot
 
     async def _send_request(self, method, url, params=None, body=None):
-        async with self.session.request(
-            method, url, params=params, headers={"Authorization": self.api_key}
+        try:
+            async with self.session.request(
+            method,
+            url,
+            headers={"Authorization": self.api_key},
+            **kwargs
         ) as resp:
-            return (resp, await resp.json())
+
+            if resp.status >= 400:
+                logging.warning(f"HTTP {resp.status} from {url}")
+                return resp.status, None
+
+            data = await resp.json()
+            return resp.status, data
+
+        except asyncio.TimeoutError:
+            logging.error(f"Timeout when requesting {url}")
+            raise
+        except aiohttp.ClientError as e:
+            logging.error(f"Client error: {e}")
+        raise
 
     async def find_roblox(self, user_id: int):
         doc = await self.bot.oauth2_users.db.find_one({"discord_id": user_id})
@@ -35,7 +54,7 @@ class Bloxlink:
         if not user_id:
             return {}
         if isinstance(user_id, int): 
-                url = "https://users.roblox.com/v1/users/{}" .format (userid)
+                url = "https://users.roblox.com/v1/users/{}" .format (user_id)
                 async with self.session.get(url) as resp:
                     return await resp.json()
         else: # So if it is a username it does not break             
@@ -51,7 +70,7 @@ class Bloxlink:
             if user_list:
                 userid =  user_list[0].get("id")
             else:
-                userid = None
+                return {}
 
                 url = "https://users.roblox.com/v1/users/{}" .format (userid)
                 async with self.session.get(url) as resp:
